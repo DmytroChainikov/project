@@ -41,4 +41,4 @@ async def get_user(user: _schemas.User = _fastapi.Depends(_services.get_current_
 
 @app.get("/api")
 async def root():
-    return {"message": "Awesome Leads Manager"}
+    return {"message": "Save your money"}
