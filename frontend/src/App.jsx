@@ -4,15 +4,12 @@ import Register from "./components/Register";
 import Login from "./components/Login";
 import Header from "./components/Header";
 import Dashboard from "./components/Dashboard";
-import { UserContext } from "./context/UserContext";
+import { UserContext, UserProvider } from "./context/UserContext";
 
 const App = () => {
   const [message, setMessage] = useState("");
-  const userContext = useContext(UserContext);
-  if (!UserContext) {
-    console.log("no data");
-  }
-  const {token} = userContext;
+  
+
 
   const getWelcomeMessage = async () => {
     const requestOptions = {
@@ -21,7 +18,7 @@ const App = () => {
         "Content-Type": "application/json",
       },
     };
-    const response = await fetch("/api", requestOptions);
+    const response = await fetch("http://localhost:8000/api", requestOptions);
     const data = await response.json();
 
     if (!response.ok) {
@@ -37,11 +34,12 @@ const App = () => {
 
   return (
     <>
+      <UserProvider>
       <Header title={message} />
       <div className="columns">
         <div className="column"></div>
         <div className="column m-5 is-two-thirds">
-          {!token ? (
+          {true ? (
             <div className="columns">
               <Register /> <Login />
             </div>
@@ -51,6 +49,7 @@ const App = () => {
         </div>
         <div className="column"></div>
       </div>
+      </UserProvider>
     </>
   );
 };

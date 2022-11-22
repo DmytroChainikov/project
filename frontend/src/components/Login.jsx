@@ -7,7 +7,13 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [, setToken] = useContext(UserContext);
+  // const [, setToken] = useContext(UserContext);
+
+  const userContext = useContext(UserContext);
+  if (!UserContext) {
+    console.log("no data");
+  }
+  //const {token} = userContext;
 
   const submitLogin = async () => {
     const requestOptions = {
@@ -18,13 +24,13 @@ const Login = () => {
       ),
     };
 
-    const response = await fetch("/api/token", requestOptions);
+    const response = await fetch("http://localhost:8000/api/token", requestOptions);
     const data = await response.json();
 
     if (!response.ok) {
       setErrorMessage(data.detail);
     } else {
-      setToken(data.access_token);
+      //setToken(data.access_token);
     }
   };
 
