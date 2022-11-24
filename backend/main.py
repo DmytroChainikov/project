@@ -1,5 +1,6 @@
 from typing import List
 import fastapi as _fastapi
+from fastapi.middleware.cors import CORSMiddleware
 import fastapi.security as _security
 
 import sqlalchemy.orm as _orm
@@ -8,6 +9,15 @@ import services as _services, schemas as _schemas
 
 app = _fastapi.FastAPI()
 
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.post("/api/users")
 async def create_user(
