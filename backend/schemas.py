@@ -57,11 +57,8 @@ class UserCreate(_UserBase):
 
 class User(_UserBase):
     id: int
-    money_id: List[Money]
-    category_id: List[Category]
+    money_id: List[Money] = []
+    category_id: List[Category] = []
     class Config:
         orm_mode = True
-
-# class _CategoryBase(_pydantic.BaseModel):
-
     

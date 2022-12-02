@@ -23,6 +23,7 @@ class User(_database.Base):
 class Money(_database.Base):
     __tablename__ = "money"
     id = _sql.Column(_sql.Integer, primary_key=True, index=True)
+    user_id = _sql.Column(_sql.Integer, _sql.ForeignKey("users.id"))
     money_type_id = relationship("Money_type", back_populates="money")
     money_income_id = relationship("Money_income", back_populates="money")
     money_saving_id = relationship("Money_saving", back_populates="money")
@@ -70,17 +71,15 @@ class Money_saving(_database.Base):
     money_id = _sql.Column(_sql.Integer, _sql.ForeignKey("money.id"))
     money = _orm.relationship("Money", back_populates="money_saving_id")
         
-    
 class Category(_database.Base):
     __tablename__ = "category"
     id = _sql.Column(_sql.Integer, primary_key=True, index=True)
+    user_id = _sql.Column(_sql.Integer, _sql.ForeignKey("users.id"))
     category_type = relationship("Category_type")
     category_quantity = relationship("Category_quantity")
         
     user = _orm.relationship("User", back_populates="category_id")
     
-
-
 class Category_type(_database.Base):
     __tablename__ = "category_type"
     id = _sql.Column(_sql.Integer, primary_key=True, index=True)
@@ -89,7 +88,6 @@ class Category_type(_database.Base):
     
     category_id = _sql.Column(_sql.Integer, _sql.ForeignKey("category.id"))
         
-    
 class Category_quantity(_database.Base):
     __tablename__ = "category_quantity"
     id = _sql.Column(_sql.Integer, primary_key=True, index=True)
