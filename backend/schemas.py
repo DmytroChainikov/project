@@ -1,5 +1,5 @@
 import datetime as _dt
-
+from typing import List 
 import pydantic as _pydantic
 
 
@@ -16,6 +16,13 @@ class UserCreate(_UserBase):
 
 class User(_UserBase):
     id: int
-
+    money_id: List[Money]
+    category_id: List[Category]
     class Config:
         orm_mode = True
+
+# class _MoneyBase(_pydantic.BaseModel):
+
+
+# class _CategoryBase(_pydantic.BaseModel):
+    
