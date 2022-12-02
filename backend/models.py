@@ -33,7 +33,7 @@ money_category = _sql.Table(
     "money_category",
     _database.Base.metadata,
     _sql.Column("money_type_id", _sql.ForeignKey("money_type.id"), primary_key=True),
-    _sql.Column("category_type_id", _sql.ForeignKey("category_type.id"), primary_key=True),
+    _sql.Column("category_quantity_id", _sql.ForeignKey("category_quantity.id"), primary_key=True),
 )
 
 class Money_type(_database.Base):
@@ -46,14 +46,14 @@ class Money_type(_database.Base):
     
     money_id = _sql.Column(_sql.Integer, _sql.ForeignKey("money.id"))
     money = _orm.relationship("Money", back_populates="money_type_id")
-    category_type = _orm.relationship("Category_type", secondary=money_category, back_populates="money")
+    category_type = _orm.relationship("Category_quantity", secondary=money_category, back_populates="money")
     
 class Money_income(_database.Base):
     __tablename__ = "money_income"
     id = _sql.Column(_sql.Integer, primary_key=True, index=True)
     income_type = _sql.Column(_sql.String, unique=True)
     income_quantity = _sql.Column(_sql.Float)
-    income_period = _sql.Column(_sql.String)
+    income_period = _sql.Column(_sql.Integer)
     
     money_id = _sql.Column(_sql.Integer, _sql.ForeignKey("money.id"))
     money = _orm.relationship("Money", back_populates="money_income_id")
@@ -63,7 +63,8 @@ class Money_saving(_database.Base):
     id = _sql.Column(_sql.Integer, primary_key=True, index=True)
     saving_name = _sql.Column(_sql.String)
     saving_quantity = _sql.Column(_sql.Float)
-    saving_period = _sql.Column(_sql.String)
+    saving_period_start = _sql.Column(_sql.DateTime)
+    saving_period_end = _sql.Column(_sql.DateTime)
     saving_description = _sql.Column(_sql.String)
     
     money_id = _sql.Column(_sql.Integer, _sql.ForeignKey("money.id"))
@@ -87,9 +88,7 @@ class Category_type(_database.Base):
     category_description = _sql.Column(_sql.String)
     
     category_id = _sql.Column(_sql.Integer, _sql.ForeignKey("category.id"))
-    
-    money = _orm.relationship("Money_type", secondary=money_category, back_populates="category_type")
-    
+        
     
 class Category_quantity(_database.Base):
     __tablename__ = "category_quantity"
@@ -99,4 +98,6 @@ class Category_quantity(_database.Base):
     
     
     category_id = _sql.Column(_sql.Integer, _sql.ForeignKey("category.id"))
+    
+    money = _orm.relationship("Money_type", secondary=money_category, back_populates="category_quantity")
     
