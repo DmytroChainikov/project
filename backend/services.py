@@ -75,14 +75,14 @@ async def get_current_user(
 
 
 async def add_money(db: _orm.Session, post: _schemas.Money_type_add, user_id: int):
-    post = _models.Money_type(**post(), money_id=user_id)
+    post = _models.Money_type(**post.dict(), money_id=user_id)
     db.add(post)
     db.commit()
     db.refresh(post)
     return post 
 
 async def add_category(db: _orm.Session, post: _schemas.Category_add, user_id: int):
-    post = _models.Category_type(**post(), id=user_id)
+    post = _models.Category_type(**post(), category_id=user_id)
     db.add(post)
     db.commit()
     db.refresh(post)

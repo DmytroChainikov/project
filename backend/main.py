@@ -65,9 +65,9 @@ def add_money(
 
 @app.post("/api/users/{user.id}/add_category", response_model=_schemas.Category)
 def add_category(
-    id: int,
+    user_id: int,
     add_category: _schemas.Category_add,
     db: _orm.Session = _fastapi.Depends(_services.get_db),
 ):
-    return _services.add_category(db=db, post=add_category)
+    return _services.add_category(db=db, post=add_category, user_id=user_id)
     
