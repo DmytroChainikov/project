@@ -9,6 +9,8 @@ import services as _services, schemas as _schemas
 
 app = _fastapi.FastAPI()
 
+#_services.create_database()
+
 origins = ["*"]
 
 app.add_middleware(
@@ -52,3 +54,20 @@ async def get_user(user: _schemas.User = _fastapi.Depends(_services.get_current_
 @app.get("/api")
 async def root():
     return {"message": "Save your money"}
+
+@app.post("/api/users/{user_id}/add_money", response_model=_schemas.Money_type_add)
+def add_money(
+    user_id: int,
+    add_money: _schemas.Money_type_add,
+    db: _orm.Session = _fastapi.Depends(_services.get_db),
+):
+    return _services.add_money(db=db, post=add_money, user_id=user_id)
+
+@app.post("/api/users/{user.id}/add_category", response_model=_schemas.Category)
+def add_category(
+    id: int,
+    add_category: _schemas.Category_add,
+    db: _orm.Session = _fastapi.Depends(_services.get_db),
+):
+    return _services.add_category(db=db, post=add_category)
+    

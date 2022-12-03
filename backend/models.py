@@ -47,7 +47,7 @@ class Money_type(_database.Base):
     
     money_id = _sql.Column(_sql.Integer, _sql.ForeignKey("money.id"))
     money = _orm.relationship("Money", back_populates="money_type_id")
-    category_type = _orm.relationship("Category_quantity", secondary=money_category, back_populates="money")
+    # category_type = _orm.relationship("Category_quantity", secondary=money_category, back_populates="money")
     
 class Money_income(_database.Base):
     __tablename__ = "money_income"
@@ -97,5 +97,5 @@ class Category_quantity(_database.Base):
     
     category_id = _sql.Column(_sql.Integer, _sql.ForeignKey("category.id"))
     
-    money = _orm.relationship("Money_type", secondary=money_category, back_populates="category_quantity")
+    # money = _orm.relationship("Money_type", secondary=money_category, back_populates="category_quantity")
     
