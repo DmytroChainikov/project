@@ -91,8 +91,7 @@ class Category_quantity(_database.Base):
     __tablename__ = "category_quantity"
     id = _sql.Column(_sql.Integer, primary_key=True, index=True)
     category_quantity = _sql.Column(_sql.Float)
-    category_type_name = _sql.Column(_sql.String)
-    
+    category_type_id = _sql.Column(_sql.Integer, _sql.ForeignKey("category_type.id"))
     
     category_id = _sql.Column(_sql.Integer, _sql.ForeignKey("category.id"))
     

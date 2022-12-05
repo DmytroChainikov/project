@@ -5,11 +5,11 @@ import fastapi.security as _security
 
 import sqlalchemy.orm as _orm
 
-import services as _services, schemas as _schemas
+import services as _services, schemas as _schemas, models as _models
 
 app = _fastapi.FastAPI()
 
-#_services.create_database()
+# _services.create_database()
 
 origins = ["*"]
 
@@ -55,19 +55,43 @@ async def get_user(user: _schemas.User = _fastapi.Depends(_services.get_current_
 async def root():
     return {"message": "Save your money"}
 
-@app.post("/api/users/{user_id}/add_money", response_model=_schemas.Money_type_add)
+@app.post("/users/{user_id}/add_money/", response_model=_schemas.Money_type)
 def add_money(
     user_id: int,
-    add_money: _schemas.Money_type_add,
+    post: _schemas.Money_type_add,
     db: _orm.Session = _fastapi.Depends(_services.get_db),
 ):
-    return _services.add_money(db=db, post=add_money, user_id=user_id)
+    db_user = _services.get_user(db=db, user_id=user_id)
+    if db_user is None:
+        raise _fastapi.HTTPException(
+            status_code=404, detail="sorry this user does not exist"
+        )
+    return _services.add_money(db=db, post=post, user_id=user_id)
 
-@app.post("/api/users/{user.id}/add_category", response_model=_schemas.Category)
+@app.post("/users/{user_id}/add_category/", response_model=_schemas.Category_type)
 def add_category(
     user_id: int,
-    add_category: _schemas.Category_add,
+    post: _schemas.Category_add,
     db: _orm.Session = _fastapi.Depends(_services.get_db),
 ):
-    return _services.add_category(db=db, post=add_category, user_id=user_id)
-    
+    db_user = _services.get_user(db=db, user_id=user_id)
+    if db_user is None:
+        raise _fastapi.HTTPException(
+            status_code=404, detail="sorry this user does not exist"
+        )
+    return _services.add_category(db=db, post=post, user_id=user_id)  
+
+@app.post("/users/{user_id}/add_category_money/", response_model=_schemas.Category_quantity)
+def add_category_money(
+    category_id: int,
+    post: _schemas.Category_add_money,
+    db: _orm.Session = _fastapi.Depends(_services.get_db),
+):
+    db_user = _services.get_category(db=db, category_id=category_id)
+    if db_user is None:
+        raise _fastapi.HTTPException(
+            status_code=404, detail="sorry this category does not exist"
+        )
+    return _services.add_category_money(db=db, post=post, category_type_id=_models.Category_type.id)  
+
+#need fix in add money to category

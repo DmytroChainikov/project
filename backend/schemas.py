@@ -2,17 +2,20 @@ import datetime as _dt
 from typing import List 
 import pydantic as _pydantic
 
-class _Money_type_base(_pydantic.BaseModel):
+class Money_type_base(_pydantic.BaseModel):
     type_name: str
-    type_quantity: float | None
-    type_description: str | None
+    type_quantity: float
+    type_description: str
     
+    # class Config:
+    #     orm_mode = True
     
-class Money_type_add(_Money_type_base):
+class Money_type_add(Money_type_base):
     pass
       
-class Money_type(_Money_type_base):
+class Money_type(Money_type_base):
     id: int
+    
     class Config:
         orm_mode = True
     
@@ -48,11 +51,17 @@ class Category_type(Category_base):
     
     class Config:
         orm_mode = True
-
-class Category_quantity(_pydantic.BaseModel):
-    id: int
+class Category_quantity_base(_pydantic.BaseModel):
     category_quantity: float
-    category_type_name: str
+    
+class Category_add_money(Category_quantity_base):
+    pass
+
+class Category_quantity(Category_quantity_base):
+    id: int
+    category_type_id: int
+    class Config:
+        orm_mode = True
     
 class _UserBase(_pydantic.BaseModel):
     email: str

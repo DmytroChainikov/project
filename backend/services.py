@@ -23,6 +23,11 @@ def get_db():
     finally:
         db.close()
 
+def get_user(db: _orm.Session, user_id: int):
+    return db.query(_models.User).filter(_models.User.id == user_id).first()
+
+def get_category(db: _orm.Session, category_id: int):
+    return db.query(_models.Category_type).filter(_models.Category_type.id == category_id).first()
 
 async def get_user_by_email(email: str, db: _orm.Session):
     return db.query(_models.User).filter(_models.User.email == email).first()
@@ -74,16 +79,23 @@ async def get_current_user(
 
 
 
-async def add_money(db: _orm.Session, post: _schemas.Money_type_add, user_id: int):
+def add_money(db: _orm.Session, post: _schemas.Money_type_add, user_id: int):
     post = _models.Money_type(**post.dict(), money_id=user_id)
     db.add(post)
     db.commit()
     db.refresh(post)
-    return post 
+    return post
 
-async def add_category(db: _orm.Session, post: _schemas.Category_add, user_id: int):
-    post = _models.Category_type(**post(), category_id=user_id)
+def add_category(db: _orm.Session, post: _schemas.Category_add, user_id: int):
+    post = _models.Category_type(**post.dict(), category_id=user_id)
     db.add(post)
     db.commit()
     db.refresh(post)
-    return post 
+    return post
+
+def add_category_money(db: _orm.Session, post: _schemas.Category_add_money, category_type_id:int):
+    post = _models.Category_quantity(**post.dict(), category_type_id=_models.Category_type.id)
+    db.add(post)
+    db.commit()
+    db.refresh(post)
+    return post
