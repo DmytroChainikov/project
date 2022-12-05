@@ -91,8 +91,8 @@ class Money(BaseModelll):
     
 class Category(_pydantic.BaseModel):
     id: int
-    category_type_id: int
-    category_quantity_id: int
+    category_type_id: List[Category_type] = []
+    category_quantity_id: List[Category_quantity] = []
 
 class User(_UserBase):
     id: int
