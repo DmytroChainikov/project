@@ -26,8 +26,8 @@ def get_db():
 def get_user(db: _orm.Session, user_id: int):
     return db.query(_models.User).filter(_models.User.id == user_id).first()
 
-def get_category(db: _orm.Session, category_id: int):
-    return db.query(_models.Category_type).filter(_models.Category_type.id == category_id).first()
+def get_category(db: _orm.Session, category_type_id: int):
+    return db.query(_models.Category_type).filter(_models.Category_type.id == category_type_id).first()
 
 async def get_user_by_email(email: str, db: _orm.Session):
     return db.query(_models.User).filter(_models.User.email == email).first()
@@ -77,7 +77,10 @@ async def get_current_user(
 
     return _schemas.User.from_orm(user)
 
-
+def get_balance(db: _orm.Session, user_id: int):
+    choice_list = db.query(_models.Money_type).filter(_models.Money_type.user_id == user_id).all()
+    print(choice_list)
+    return choice_list
 
 def add_money(db: _orm.Session, post: _schemas.Money_type_add, user_id: int):
     post = _models.Money_type(**post.dict(), user_id=user_id)
@@ -86,6 +89,14 @@ def add_money(db: _orm.Session, post: _schemas.Money_type_add, user_id: int):
     db.refresh(post)
     return post
 
+def update_balance(db: _orm.Session, id: int, post: _schemas.Money_type_add):
+    db_post = get_money(db=db, user_id=user_id, )
+    db_post.title = post.title
+    db_post.content = post.content
+    db.commit()
+    db.refresh(db_post)
+    return db_post
+
 def add_category(db: _orm.Session, post: _schemas.Category_add, user_id: int):
     post = _models.Category_type(**post.dict(), user_id=user_id)
     db.add(post)
@@ -93,8 +104,10 @@ def add_category(db: _orm.Session, post: _schemas.Category_add, user_id: int):
     db.refresh(post)
     return post
 
-def add_category_money(db: _orm.Session, post: _schemas.Category_add_money, category_type_id:int):
-    post = _models.Category_quantity(**post.dict(), category_type_id=_models.Category_type.id)
+def add_category_money(db: _orm.Session, post: _schemas.Category_add_money, category_type_id:int, user_id: int):
+    category_type_id=(db.query(_models.Category_type).filter(_models.Category_type.id == category_type_id).first()).__dict__["id"]
+    post = _models.Category_quantity(**post.dict(), category_type_id=category_type_id, user_id=user_id)
+    print(category_type_id)
     db.add(post)
     db.commit()
     db.refresh(post)

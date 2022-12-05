@@ -52,7 +52,7 @@ class Category_add(Category_base):
 class Category_type(Category_base):
     id: int
     user_id: int
-    
+    type_id: int
     class Config:
         orm_mode = True
 class Category_quantity_base(_pydantic.BaseModel):

@@ -66,15 +66,15 @@ class Category(_database.Base):
     __tablename__ = "category"
     id = _sql.Column(_sql.Integer, primary_key=True, index=True)
     user_id = _sql.Column(_sql.Integer, _sql.ForeignKey("users.id"))
-    category_type_id = relationship("Category_type", back_populates="category")
-    category_quantity_id = relationship("Category_quantity", back_populates="category")
+    category_type_id = _orm.relationship("Category_type", back_populates="category")
+    category_quantity_id = _orm.relationship("Category_quantity", back_populates="category")
         
     user = _orm.relationship("User", back_populates="category_id")
     
 class Category_type(_database.Base):
     __tablename__ = "category_type"
     id = _sql.Column(_sql.Integer, primary_key=True, index=True)
-    user_id = _sql.Column(_sql.Integer, _sql.ForeignKey("users.id"))
+    user_id = _sql.Column(_sql.Integer, _sql.ForeignKey("category.id"))
     category_name = _sql.Column(_sql.String, unique=True)
     category_description = _sql.Column(_sql.String)
     
@@ -83,10 +83,10 @@ class Category_type(_database.Base):
 class Category_quantity(_database.Base):
     __tablename__ = "category_quantity"
     id = _sql.Column(_sql.Integer, primary_key=True, index=True)
-    user_id = _sql.Column(_sql.Integer, _sql.ForeignKey("users.id"))
+    user_id = _sql.Column(_sql.Integer, _sql.ForeignKey("category.id"))
     category_quantity = _sql.Column(_sql.Float)
-    category_type_id = _sql.Column(_sql.Integer, _sql.ForeignKey("category_type.id"))
+    category_type_id = _sql.Column(_sql.Integer)
     
-    category = _orm.relationship("Category", back_populates="category_quantity")
+    category = _orm.relationship("Category", back_populates="category_quantity_id")
     
     

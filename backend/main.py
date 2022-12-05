@@ -66,7 +66,22 @@ def add_money(
         raise _fastapi.HTTPException(
             status_code=404, detail="sorry this user does not exist"
         )
+    
     return _services.add_money(db=db, post=post, user_id=user_id)
+@app.get("/money/get_balance")
+def get_balance(
+        user_id: int,
+    db: _orm.Session = _fastapi.Depends(_services.get_db)
+):
+    post = (_services.get_balance(db=db, user_id=user_id))
+    print(' '.join(post))
+    return post
+@app.put("/money/edit_balance", response_model=_schemas.Money_type)
+def update_balance(
+    post: _schemas.Money_type_add,
+    db: _orm.Session = _fastapi.Depends(_services.get_db),
+):
+    return _services.update_balance(db=db, post=post)
 
 @app.post("/categoty/{user_id}/add_category/", tags=["category"], response_model=_schemas.Category_type)
 def add_category(
@@ -83,15 +98,21 @@ def add_category(
 
 @app.post("/category/{user_id}/add_category_money/", response_model=_schemas.Category_quantity, tags=["category"])
 def add_category_money(
+    category_type_id: int,
     user_id: int,
     post: _schemas.Category_add_money,
     db: _orm.Session = _fastapi.Depends(_services.get_db),
 ):
-    db_user = _services.get_category(db=db, user_id=user_id)
+    category_type_id = (db.query(_models.Category_type).filter(_models.Category_type.id == category_type_id).first()).__dict__["id"]
+    db_user = _services.get_user(db=db, user_id=user_id)
     if db_user is None:
+        raise _fastapi.HTTPException(
+            status_code=404, detail="sorry this user does not exist"
+        )
+    if category_type_id is None:
         raise _fastapi.HTTPException(
             status_code=404, detail="sorry this category does not exist"
         )
-    return _services.add_category_money(db=db, post=post, category_id=_models.Category_type.id)  
+    return _services.add_category_money(db=db, post=post, category_type_id=category_type_id, user_id=user_id)  
 
 #need fix in add money to category
