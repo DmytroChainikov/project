@@ -9,7 +9,7 @@ import services as _services, schemas as _schemas, models as _models
 
 app = _fastapi.FastAPI()
 
-# _services.create_database()
+#_services.create_database()
 
 origins = ["*"]
 
@@ -21,7 +21,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.post("/api/users")
+@app.post("/api/users", tags=["users"])
 async def create_user(
     user: _schemas.UserCreate, db: _orm.Session = _fastapi.Depends(_services.get_db)
 ):
@@ -34,7 +34,7 @@ async def create_user(
     return await _services.create_token(user)
 
 
-@app.post("/api/token")
+@app.post("/api/token", tags=["users"])
 async def generate_token(
     form_data: _security.OAuth2PasswordRequestForm = _fastapi.Depends(),
     db: _orm.Session = _fastapi.Depends(_services.get_db),
@@ -47,15 +47,15 @@ async def generate_token(
     return await _services.create_token(user)
 
 
-@app.get("/api/users/me", response_model=_schemas.User)
+@app.get("/api/users/me", response_model=_schemas.User, tags=["users"])
 async def get_user(user: _schemas.User = _fastapi.Depends(_services.get_current_user)):
     return user
 
-@app.get("/api")
+@app.get("/api", tags=["name"])
 async def root():
     return {"message": "Save your money"}
 
-@app.post("/users/{user_id}/add_money/", response_model=_schemas.Money_type)
+@app.post("/money/{user_id}/add_money/", response_model=_schemas.Money_type, tags=["money"])
 def add_money(
     user_id: int,
     post: _schemas.Money_type_add,
@@ -68,7 +68,7 @@ def add_money(
         )
     return _services.add_money(db=db, post=post, user_id=user_id)
 
-@app.post("/users/{user_id}/add_category/", response_model=_schemas.Category_type)
+@app.post("/categoty/{user_id}/add_category/", tags=["category"], response_model=_schemas.Category_type)
 def add_category(
     user_id: int,
     post: _schemas.Category_add,
@@ -81,17 +81,17 @@ def add_category(
         )
     return _services.add_category(db=db, post=post, user_id=user_id)  
 
-@app.post("/users/{user_id}/add_category_money/", response_model=_schemas.Category_quantity)
+@app.post("/category/{user_id}/add_category_money/", response_model=_schemas.Category_quantity, tags=["category"])
 def add_category_money(
-    category_id: int,
+    user_id: int,
     post: _schemas.Category_add_money,
     db: _orm.Session = _fastapi.Depends(_services.get_db),
 ):
-    db_user = _services.get_category(db=db, category_id=category_id)
+    db_user = _services.get_category(db=db, user_id=user_id)
     if db_user is None:
         raise _fastapi.HTTPException(
             status_code=404, detail="sorry this category does not exist"
         )
-    return _services.add_category_money(db=db, post=post, category_type_id=_models.Category_type.id)  
+    return _services.add_category_money(db=db, post=post, category_id=_models.Category_type.id)  
 
 #need fix in add money to category

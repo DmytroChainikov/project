@@ -3,8 +3,7 @@ from typing import List
 import pydantic as _pydantic
 
 class Money_type_base(_pydantic.BaseModel):
-    type_name: str
-    type_quantity: float
+    type: str
     type_description: str
     
     # class Config:
@@ -15,6 +14,8 @@ class Money_type_add(Money_type_base):
       
 class Money_type(Money_type_base):
     id: int
+    type_quantity: float | None = 0.00
+    user_id: int
     
     class Config:
         orm_mode = True
@@ -24,6 +25,7 @@ class Money_income(_pydantic.BaseModel):
     income_type: str
     income_quantity: float
     income_period: int  
+    user_id: int
     
     class Config:
         orm_mode = True
@@ -35,6 +37,7 @@ class Money_saving(_pydantic.BaseModel):
     saving_period_start: _dt.date
     saving_period_end: _dt.date
     saving_description: str
+    user_id: int
     
     class Config:
         orm_mode = True
@@ -48,6 +51,7 @@ class Category_add(Category_base):
   
 class Category_type(Category_base):
     id: int
+    user_id: int
     
     class Config:
         orm_mode = True
@@ -60,6 +64,7 @@ class Category_add_money(Category_quantity_base):
 class Category_quantity(Category_quantity_base):
     id: int
     category_type_id: int
+    user_id: int
     class Config:
         orm_mode = True
     
