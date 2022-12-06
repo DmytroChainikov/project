@@ -33,7 +33,7 @@ class Money(_database.Base):
 class Money_type(_database.Base):
     __tablename__ = "money_type"
     id = _sql.Column(_sql.Integer, primary_key=True, index=True)
-    type = _sql.Column(_sql.String)
+    type_name = _sql.Column(_sql.String)
     type_quantity = _sql.Column(_sql.Float)
     type_description = _sql.Column(_sql.String)
     
@@ -75,7 +75,7 @@ class Category_type(_database.Base):
     __tablename__ = "category_type"
     id = _sql.Column(_sql.Integer, primary_key=True, index=True)
     user_id = _sql.Column(_sql.Integer, _sql.ForeignKey("category.id"))
-    category_name = _sql.Column(_sql.String, unique=True)
+    category_name = _sql.Column(_sql.String)
     category_description = _sql.Column(_sql.String)
     
     category = _orm.relationship("Category", back_populates="category_type_id")
