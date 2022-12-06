@@ -3,9 +3,9 @@ from typing import List
 import pydantic as _pydantic
 
 class Money_type_base(_pydantic.BaseModel):
-    type: str
+    type_name: str
     type_description: str
-    
+    type_quantity: float
     # class Config:
     #     orm_mode = True
     
@@ -14,8 +14,12 @@ class Money_type_add(Money_type_base):
       
 class Money_type(Money_type_base):
     id: int
-    type_quantity: float | None = 0.00
     user_id: int
+    
+    class Config:
+        orm_mode = True
+class Update_balance(_pydantic.BaseModel):
+    type_quantity : float
     
     class Config:
         orm_mode = True
@@ -52,7 +56,6 @@ class Category_add(Category_base):
 class Category_type(Category_base):
     id: int
     user_id: int
-    type_id: int
     class Config:
         orm_mode = True
 class Category_quantity_base(_pydantic.BaseModel):

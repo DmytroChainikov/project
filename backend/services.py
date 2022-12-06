@@ -1,10 +1,10 @@
+import ast
 import fastapi as _fastapi
 import fastapi.security as _security
 import jwt as _jwt
 import datetime as _dt
 import sqlalchemy.orm as _orm
 import passlib.hash as _hash
-
 import database as _database, models as _models, schemas as _schemas
 
 oauth2schema = _security.OAuth2PasswordBearer(tokenUrl="/api/token")
@@ -79,8 +79,8 @@ async def get_current_user(
 
 def get_balance(db: _orm.Session, user_id: int):
     choice_list = db.query(_models.Money_type).filter(_models.Money_type.user_id == user_id).all()
-    print(choice_list)
     return choice_list
+
 
 def add_money(db: _orm.Session, post: _schemas.Money_type_add, user_id: int):
     post = _models.Money_type(**post.dict(), user_id=user_id)
@@ -89,10 +89,12 @@ def add_money(db: _orm.Session, post: _schemas.Money_type_add, user_id: int):
     db.refresh(post)
     return post
 
-def update_balance(db: _orm.Session, id: int, post: _schemas.Money_type_add):
-    db_post = get_money(db=db, user_id=user_id, )
-    db_post.title = post.title
-    db_post.content = post.content
+def update_type_info(db: _orm.Session, user_id: int, id: int, post: _schemas.Money_type_add):
+    
+    db_post = get_balance(db=db, id=id)
+    db_post.type_name = post.type_name
+    db_post.description = post.type_description
+    db_post.quantity = post.type_quantity
     db.commit()
     db.refresh(db_post)
     return db_post

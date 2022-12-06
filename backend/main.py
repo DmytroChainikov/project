@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import fastapi.security as _security
 
 import sqlalchemy.orm as _orm
-
+import database as _database
 import services as _services, schemas as _schemas, models as _models
 
 app = _fastapi.FastAPI()
@@ -68,20 +68,22 @@ def add_money(
         )
     
     return _services.add_money(db=db, post=post, user_id=user_id)
-@app.get("/money/get_balance")
+@app.get("/money/{user_id}/get_balance", tags=["money"])
 def get_balance(
-        user_id: int,
+    user_id: int,
     db: _orm.Session = _fastapi.Depends(_services.get_db)
 ):
     post = (_services.get_balance(db=db, user_id=user_id))
-    print(' '.join(post))
     return post
-@app.put("/money/edit_balance", response_model=_schemas.Money_type)
-def update_balance(
+
+@app.put("/money/{user_id}/edit_money_type", tags=["money"] , response_model=_schemas.Money_type)
+def update_type_info(
+    id: int,
+    user_id: int,
     post: _schemas.Money_type_add,
     db: _orm.Session = _fastapi.Depends(_services.get_db),
 ):
-    return _services.update_balance(db=db, post=post)
+    return _services.update_type_info(db=db, post=post, id=id, user_id=user_id)
 
 @app.post("/categoty/{user_id}/add_category/", tags=["category"], response_model=_schemas.Category_type)
 def add_category(
@@ -105,14 +107,15 @@ def add_category_money(
 ):
     category_type_id = (db.query(_models.Category_type).filter(_models.Category_type.id == category_type_id).first()).__dict__["id"]
     db_user = _services.get_user(db=db, user_id=user_id)
-    if db_user is None:
-        raise _fastapi.HTTPException(
-            status_code=404, detail="sorry this user does not exist"
-        )
+    
     if category_type_id is None:
         raise _fastapi.HTTPException(
             status_code=404, detail="sorry this category does not exist"
         )
+    if db_user is None:
+        raise _fastapi.HTTPException(
+            status_code=404, detail="sorry this user does not exist"
+    )
     return _services.add_category_money(db=db, post=post, category_type_id=category_type_id, user_id=user_id)  
 
 #need fix in add money to category
