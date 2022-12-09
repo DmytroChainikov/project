@@ -55,6 +55,7 @@ class Money_saving(_database.Base):
     id = _sql.Column(_sql.Integer, primary_key=True, index=True)
     saving_name = _sql.Column(_sql.String)
     saving_quantity = _sql.Column(_sql.Float)
+    saving_persentage = _sql.Column(_sql.Float)
     saving_period_start = _sql.Column(_sql.DateTime)
     saving_period_end = _sql.Column(_sql.DateTime)
     saving_description = _sql.Column(_sql.String)
