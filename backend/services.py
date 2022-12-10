@@ -319,24 +319,3 @@ def add_category_money(
     db.commit()
     db.refresh(post)
     return post
-
-
-def calc_add_category_money(db: _orm.Session, payment_id: int):
-    bal = float(
-        str(
-            list(
-                db.query(_models.Money_type.type_quantity)
-                .filter(_models.Money_type.id == payment_id)
-                .first()
-            )
-        )
-        .replace("[", "")
-        .replace("]", "")
-    )
-    db_post = get_balance_id(db=db, id=payment_id)
-    db_post.type_name = str(list(db.query(_models.Money_type.type_name).filter(_models.Money_type.id == paiment_id).first())).replace("[", "").replace("]", "")
-    db_post.type_description = str(list(db.query(_models.Money_type.type_description).filter(_models.Money_type.id == paiment_id).first())).replace("[", "").replace("]", "")
-    #db_post.type_quantity = 
-    db.commit()
-    db.refresh(db_post)
-    return db_post
