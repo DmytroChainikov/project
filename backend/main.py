@@ -287,6 +287,7 @@ def add_category(
 def add_category_money(
     category_type_id: int,
     user_id: int,
+    paiment_id: int,
     post: _schemas.Category_add_money,
     db: _orm.Session = _fastapi.Depends(_services.get_db),
 ):
@@ -305,6 +306,7 @@ def add_category_money(
         raise _fastapi.HTTPException(
             status_code=404, detail="sorry this user does not exist"
         )
+    _services.calc_add_category_money(db=db, paiment_id=paiment_id)
     return _services.add_category_money(
         db=db, post=post, category_type_id=category_type_id, user_id=user_id
     )

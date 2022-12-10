@@ -87,6 +87,7 @@ class Category_quantity(_database.Base):
     id = _sql.Column(_sql.Integer, primary_key=True, index=True)
     user_id = _sql.Column(_sql.Integer, _sql.ForeignKey("category.id"))
     category_quantity = _sql.Column(_sql.Float)
+    quantity_description = _sql.Column(_sql.String)
     category_type_id = _sql.Column(_sql.Integer)
     
     category = _orm.relationship("Category", back_populates="category_quantity_id")

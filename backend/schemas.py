@@ -65,7 +65,7 @@ class Category_type(Category_base):
         orm_mode = True
 class Category_quantity_base(_pydantic.BaseModel):
     category_quantity: float
-    
+    quantity_description: str
 class Category_add_money(Category_quantity_base):
     pass
 
