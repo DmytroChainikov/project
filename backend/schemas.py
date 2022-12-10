@@ -18,29 +18,34 @@ class Money_type(Money_type_base):
     
     class Config:
         orm_mode = True
-class Update_balance(_pydantic.BaseModel):
-    type_quantity : float
-    
-    class Config:
-        orm_mode = True
-    
-class Money_income(_pydantic.BaseModel):
-    id: int
+
+class Money_income_base(_pydantic.BaseModel):
     income_type: str
+    income_description: str
     income_quantity: float
     income_period: int  
+        
+class Money_income_add(Money_income_base):
+    pass
+class Money_income(Money_income_base):
+    id: int
     user_id: int
     
     class Config:
         orm_mode = True
-
-class Money_saving(_pydantic.BaseModel):
-    id: int
+class Money_saving_base(_pydantic.BaseModel):
     saving_name: str
     saving_quantity: float
+    saving_persentage: float
+    saving_description: str
     saving_period_start: _dt.date
     saving_period_end: _dt.date
-    saving_description: str
+    
+class Money_saving_add(Money_saving_base):
+    pass
+
+class Money_saving(Money_saving_base):
+    id: int
     user_id: int
     
     class Config:

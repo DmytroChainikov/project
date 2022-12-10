@@ -9,9 +9,9 @@ import services as _services, schemas as _schemas, models as _models
 
 app = _fastapi.FastAPI()
 
-# _services.create_database()
+#_services.create_database()
 
-origins = ["*"]
+origins = ["http://localhost:8000"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -77,18 +77,17 @@ def add_money(
 
 @app.get("/money/{user_id}/get_balance", tags=["money"])
 def get_balance(user_id: int, db: _orm.Session = _fastapi.Depends(_services.get_db)):
-    print(_models.Money_type.type_quantity)
     post = _services.get_balance(db=db, user_id=user_id)
     return post
 
 
-@app.get("/money/{user_id}/get_total_balance", tags=["working on"])
+@app.get("/money/{user_id}/get_total_balance", tags=["money"])
 def get_total_balance(
     user_id: int, db: _orm.Session = _fastapi.Depends(_services.get_db)
 ):
     result = _services.get_total_balance(db=db, user_id=user_id)
     
-    if result[user_id] is True:
+    if result[0] != user_id:
         raise _fastapi.HTTPException(
             status_code=404, detail="sorry this user does not exist"
         )
@@ -115,14 +114,6 @@ def update_type_info(
     post: _schemas.Money_type_add,
     db: _orm.Session = _fastapi.Depends(_services.get_db),
 ):
-    return _services.update_type_info(db=db, post=post, id=id, user_id=user_id)
-
-
-@app.delete("/money/{user_id}/money_type_delete")
-def delete_money_type(
-    id: int, user_id: int, db: _orm.Session = _fastapi.Depends(_services.get_db)
-):
-    _services.delete_money_type(db=db, id=id, user_id=user_id)
     db_user = _services.get_user(db=db, user_id=user_id)
     if db_user is None:
         raise _fastapi.HTTPException(
@@ -133,8 +124,142 @@ def delete_money_type(
         raise _fastapi.HTTPException(
             status_code=404, detail="sorry this money type does not exist"
         )
+    return _services.update_type_info(db=db, post=post, id=id)
+
+
+@app.delete("/money/{user_id}/money_type_delete", tags=["money"])
+def delete_money_type(
+    id: int, user_id: int, db: _orm.Session = _fastapi.Depends(_services.get_db)
+):
+    db_user = _services.get_user(db=db, user_id=user_id)
+    if db_user is None:
+        raise _fastapi.HTTPException(
+            status_code=404, detail="sorry this user does not exist"
+        )
+    money_type_id = _services.get_money_type_id(db=db, user_id=user_id, id=id)
+    if money_type_id is None:
+        raise _fastapi.HTTPException(
+            status_code=404, detail="sorry this money type does not exist"
+        )
+    _services.delete_money_type(db=db, id=id, user_id=user_id)
     return {"message": f"successfully deleted money type"}
 
+@app.post(
+    "/money/{user_id}/add_money_saving/", response_model=_schemas.Money_saving, tags=["money_saving"]
+)
+def add_money_saving(
+    user_id: int,
+    post: _schemas.Money_saving_add,
+    db: _orm.Session = _fastapi.Depends(_services.get_db),
+):
+    db_user = _services.get_user(db=db, user_id=user_id)
+    if db_user is None:
+        raise _fastapi.HTTPException(
+            status_code=404, detail="sorry this user does not exist"
+        )
+
+    return _services.add_money_saving(db=db, post=post, user_id=user_id)
+
+@app.get("/money/{user_id}/get_saving", tags=["money_saving"])
+def get_saving(user_id: int, db: _orm.Session = _fastapi.Depends(_services.get_db)):
+    post = _services.get_saving(db=db, user_id=user_id)
+    return post
+
+@app.put(
+    "/money/{user_id}/edit_saving_type",
+    tags=["money_saving"],
+    response_model=_schemas.Money_saving,
+)
+def update_saving_info(
+    id: int,
+    user_id: int,
+    post: _schemas.Money_saving_add,
+    db: _orm.Session = _fastapi.Depends(_services.get_db),
+):
+    saving_type_id = _services.get_money_saving_id(db=db, user_id=user_id, id=id)
+    if saving_type_id is None:
+        raise _fastapi.HTTPException(
+            status_code=404, detail="sorry this saving type does not exist"
+        )
+    return _services.update_saving_info(db=db, post=post, id=id)
+
+@app.delete("/money/{user_id}/money_saving_delete", tags=["money_saving"])
+def delete_money_saving(
+    id: int, user_id: int, db: _orm.Session = _fastapi.Depends(_services.get_db)
+):
+    db_user = _services.get_user(db=db, user_id=user_id)
+    if db_user is None:
+        raise _fastapi.HTTPException(
+            status_code=404, detail="sorry this user does not exist"
+        )
+    money_income_id = _services.get_money_income_id(db=db, user_id=user_id, id=id)
+    if money_income_id is None:
+        raise _fastapi.HTTPException(
+            status_code=404, detail="sorry this money type does not exist"
+        )    
+        
+    _services.delete_money_saving(db=db, id=id, user_id=user_id)
+    
+    return  {"message": f"successfully deleted saving type"}
+
+#money_income
+
+@app.post(
+    "/money/{user_id}/add_money_income/", response_model=_schemas.Money_income, tags=["money_income"]
+)
+def add_money_income(
+    user_id: int,
+    post: _schemas.Money_income_add,
+    db: _orm.Session = _fastapi.Depends(_services.get_db),
+):
+    db_user = _services.get_user(db=db, user_id=user_id)
+    if db_user is None:
+        raise _fastapi.HTTPException(
+            status_code=404, detail="sorry this user does not exist"
+        )
+
+    return _services.add_money_income(db=db, post=post, user_id=user_id)
+
+@app.get("/money/{user_id}/get_money_income", tags=["money_income"])
+def get_money_income(user_id: int, db: _orm.Session = _fastapi.Depends(_services.get_db)):
+    post = _services.get_money_income(db=db, user_id=user_id)
+    return post
+
+@app.put(
+    "/money/{user_id}/edit_money_income",
+    tags=["money_income"],
+    response_model=_schemas.Money_income,
+)
+def update_income_info(
+    id: int,
+    user_id: int,
+    post: _schemas.Money_income_add,
+    db: _orm.Session = _fastapi.Depends(_services.get_db),
+):
+    income_type_id = _services.get_money_income_id(db=db, user_id=user_id, id=id)
+    if income_type_id is None:
+        raise _fastapi.HTTPException(
+            status_code=404, detail="sorry this income type does not exist"
+        )
+    return _services.update_income_info(db=db, post=post, id=id)
+
+@app.delete("/money/{user_id}/money_income_delete", tags=["money_income"])
+def delete_money_income(
+    id: int, user_id: int, db: _orm.Session = _fastapi.Depends(_services.get_db)
+):
+    db_user = _services.get_user(db=db, user_id=user_id)
+    if db_user is None:
+        raise _fastapi.HTTPException(
+            status_code=404, detail="sorry this user does not exist"
+        )
+    money_income_id = _services.get_money_income_id(db=db, user_id=user_id, id=id)
+    if money_income_id is None:
+        raise _fastapi.HTTPException(
+            status_code=404, detail="sorry this income type does not exist"
+        )
+    
+    _services.delete_money_income(db=db, id=id, user_id=user_id)
+    return  {"message": f"successfully deleted saving type"}
 
 @app.post(
     "/categoty/{user_id}/add_category/",
