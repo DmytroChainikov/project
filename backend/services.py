@@ -267,14 +267,47 @@ def add_category(db: _orm.Session, post: _schemas.Category_add, user_id: int):
     db.refresh(post)
     return post
 
-
+payment: float
 def add_category_money(
     db: _orm.Session,
     post: _schemas.Category_add_money,
     category_type_id: int,
     user_id: int,
+    payment_id: int
 ):
     category_type_id = (
+        db.query(_models.Category_type)
+        .filter(_models.Category_type.id == category_type_id)
+        .first()
+    ).__dict__["id"]
+    get_balance = _models.Category_quantity(
+        **post.dict(), category_type_id=category_type_id, user_id=user_id
+    )
+    bal = float(
+        str(
+            list(
+                db.query(_models.Money_type.type_quantity)
+                .filter(_models.Money_type.id == payment_id)
+                .first()
+            )
+        )
+        .replace("[", "")
+        .replace("]", "")
+    )
+    balance = get_balance.category_quantity
+    result = bal - balance
+    print(bal)
+    print(balance)
+    print(result)
+    
+    db_post = get_balance_id(db=db, id=payment_id)
+    db_post.type_quantity = result
+    db.commit()
+    db.refresh(db_post)
+    
+    
+    def post_add_category_money():
+        category_type_id = (
         db.query(_models.Category_type)
         .filter(_models.Category_type.id == category_type_id)
         .first()
@@ -282,28 +315,28 @@ def add_category_money(
     post = _models.Category_quantity(
         **post.dict(), category_type_id=category_type_id, user_id=user_id
     )
-    print(category_type_id)
     db.add(post)
     db.commit()
     db.refresh(post)
     return post
 
 
-def calc_add_category_money(db: _orm.Session, paiment_id: int):
+def calc_add_category_money(db: _orm.Session, payment_id: int):
     bal = float(
         str(
             list(
                 db.query(_models.Money_type.type_quantity)
-                .filter(_models.Money_type.id == paiment_id)
+                .filter(_models.Money_type.id == payment_id)
                 .first()
             )
         )
         .replace("[", "")
         .replace("]", "")
     )
-    print(bal)
-    # db_post = get_balance_id(db=db, id=id)
-    # db_post.type_quantity = bal
-    # db.commit()
-    # db.refresh(db_post)
-    # return db_post
+    db_post = get_balance_id(db=db, id=payment_id)
+    db_post.type_name = str(list(db.query(_models.Money_type.type_name).filter(_models.Money_type.id == paiment_id).first())).replace("[", "").replace("]", "")
+    db_post.type_description = str(list(db.query(_models.Money_type.type_description).filter(_models.Money_type.id == paiment_id).first())).replace("[", "").replace("]", "")
+    #db_post.type_quantity = 
+    db.commit()
+    db.refresh(db_post)
+    return db_post
