@@ -9,7 +9,7 @@ import services as _services, schemas as _schemas, models as _models
 
 app = _fastapi.FastAPI()
 
-#_services.create_database()
+# _services.create_database()
 
 origins = ["http://localhost:8000"]
 
@@ -86,7 +86,7 @@ def get_total_balance(
     user_id: int, db: _orm.Session = _fastapi.Depends(_services.get_db)
 ):
     result = _services.get_total_balance(db=db, user_id=user_id)
-    
+
     if result[0] != user_id:
         raise _fastapi.HTTPException(
             status_code=404, detail="sorry this user does not exist"
@@ -144,8 +144,11 @@ def delete_money_type(
     _services.delete_money_type(db=db, id=id, user_id=user_id)
     return {"message": f"successfully deleted money type"}
 
+
 @app.post(
-    "/money/{user_id}/add_money_saving/", response_model=_schemas.Money_saving, tags=["money_saving"]
+    "/money/{user_id}/add_money_saving/",
+    response_model=_schemas.Money_saving,
+    tags=["money_saving"],
 )
 def add_money_saving(
     user_id: int,
@@ -160,10 +163,12 @@ def add_money_saving(
 
     return _services.add_money_saving(db=db, post=post, user_id=user_id)
 
+
 @app.get("/money/{user_id}/get_saving", tags=["money_saving"])
 def get_saving(user_id: int, db: _orm.Session = _fastapi.Depends(_services.get_db)):
     post = _services.get_saving(db=db, user_id=user_id)
     return post
+
 
 @app.put(
     "/money/{user_id}/edit_saving_type",
@@ -183,6 +188,7 @@ def update_saving_info(
         )
     return _services.update_saving_info(db=db, post=post, id=id)
 
+
 @app.delete("/money/{user_id}/money_saving_delete", tags=["money_saving"])
 def delete_money_saving(
     id: int, user_id: int, db: _orm.Session = _fastapi.Depends(_services.get_db)
@@ -196,16 +202,20 @@ def delete_money_saving(
     if money_income_id is None:
         raise _fastapi.HTTPException(
             status_code=404, detail="sorry this money type does not exist"
-        )    
-        
-    _services.delete_money_saving(db=db, id=id, user_id=user_id)
-    
-    return  {"message": f"successfully deleted saving type"}
+        )
 
-#money_income
+    _services.delete_money_saving(db=db, id=id, user_id=user_id)
+
+    return {"message": f"successfully deleted saving type"}
+
+
+# money_income
+
 
 @app.post(
-    "/money/{user_id}/add_money_income/", response_model=_schemas.Money_income, tags=["money_income"]
+    "/money/{user_id}/add_money_income/",
+    response_model=_schemas.Money_income,
+    tags=["money_income"],
 )
 def add_money_income(
     user_id: int,
@@ -220,10 +230,14 @@ def add_money_income(
 
     return _services.add_money_income(db=db, post=post, user_id=user_id)
 
+
 @app.get("/money/{user_id}/get_money_income", tags=["money_income"])
-def get_money_income(user_id: int, db: _orm.Session = _fastapi.Depends(_services.get_db)):
+def get_money_income(
+    user_id: int, db: _orm.Session = _fastapi.Depends(_services.get_db)
+):
     post = _services.get_money_income(db=db, user_id=user_id)
     return post
+
 
 @app.put(
     "/money/{user_id}/edit_money_income",
@@ -243,6 +257,7 @@ def update_income_info(
         )
     return _services.update_income_info(db=db, post=post, id=id)
 
+
 @app.delete("/money/{user_id}/money_income_delete", tags=["money_income"])
 def delete_money_income(
     id: int, user_id: int, db: _orm.Session = _fastapi.Depends(_services.get_db)
@@ -257,9 +272,10 @@ def delete_money_income(
         raise _fastapi.HTTPException(
             status_code=404, detail="sorry this income type does not exist"
         )
-    
+
     _services.delete_money_income(db=db, id=id, user_id=user_id)
-    return  {"message": f"successfully deleted saving type"}
+    return {"message": f"successfully deleted saving type"}
+
 
 @app.post(
     "/categoty/{user_id}/add_category/",

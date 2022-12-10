@@ -84,18 +84,22 @@ async def get_current_user(
 
     return _schemas.User.from_orm(user)
 
-#money_type
+
+# money_type
+
 
 def get_balance(db: _orm.Session, user_id: int):
-    return db.query(_models.Money_type).filter(_models.Money_type.user_id == user_id).all()
+    return (
+        db.query(_models.Money_type).filter(_models.Money_type.user_id == user_id).all()
+    )
+
 
 def get_balance_id(db: _orm.Session, id: int):
     money_type_id = (
-        db.query(_models.Money_type)
-        .filter(_models.Money_type.id == id)
-        .first()
+        db.query(_models.Money_type).filter(_models.Money_type.id == id).first()
     )
     return money_type_id
+
 
 def get_total_balance(user_id: int, db: _orm.Session):
     value_sum = _sql.select(
@@ -105,9 +109,10 @@ def get_total_balance(user_id: int, db: _orm.Session):
     for item in result:
         if user_id is item[0]:
             user = (item[0], item[1])
-        if user_id is item[0]-1:
+        if user_id is item[0] - 1:
             user = (item[0], item[1])
     return user
+
 
 def get_money_type_id(db: _orm.Session, id: int, user_id: int):
     money_type_id = (
@@ -138,12 +143,12 @@ def update_type_info(db: _orm.Session, id: int, post: _schemas.Money_type_add):
 
 
 def delete_money_type(db: _orm.Session, id: int, user_id: int):
-    db.query(_models.Money_type, user_id).filter(
-        _models.Money_type.id == id
-    ).delete()
+    db.query(_models.Money_type, user_id).filter(_models.Money_type.id == id).delete()
     db.commit()
 
-#money_saving
+
+# money_saving
+
 
 def add_money_saving(db: _orm.Session, post: _schemas.Money_saving_add, user_id: int):
     post = _models.Money_saving(**post.dict(), user_id=user_id)
@@ -152,8 +157,14 @@ def add_money_saving(db: _orm.Session, post: _schemas.Money_saving_add, user_id:
     db.refresh(post)
     return post
 
+
 def get_saving(db: _orm.Session, user_id: int):
-    return db.query(_models.Money_saving).filter(_models.Money_saving.user_id == user_id).all()
+    return (
+        db.query(_models.Money_saving)
+        .filter(_models.Money_saving.user_id == user_id)
+        .all()
+    )
+
 
 def get_money_saving_id(db: _orm.Session, id: int, user_id: int):
     saving_type_id = (
@@ -163,13 +174,13 @@ def get_money_saving_id(db: _orm.Session, id: int, user_id: int):
     )
     return saving_type_id
 
+
 def get_saving_id(db: _orm.Session, id: int):
     money_type_id = (
-        db.query(_models.Money_saving)
-        .filter(_models.Money_saving.id == id)
-        .first()
+        db.query(_models.Money_saving).filter(_models.Money_saving.id == id).first()
     )
     return money_type_id
+
 
 def update_saving_info(db: _orm.Session, id: int, post: _schemas.Money_saving_add):
 
@@ -184,13 +195,16 @@ def update_saving_info(db: _orm.Session, id: int, post: _schemas.Money_saving_ad
     db.refresh(db_post)
     return db_post
 
+
 def delete_money_saving(db: _orm.Session, id: int, user_id: int):
     db.query(_models.Money_saving, user_id).filter(
         _models.Money_saving.id == id
     ).delete()
     db.commit()
 
-#money_income
+
+# money_income
+
 
 def add_money_income(db: _orm.Session, post: _schemas.Money_income_add, user_id: int):
     post = _models.Money_income(**post.dict(), user_id=user_id)
@@ -199,8 +213,14 @@ def add_money_income(db: _orm.Session, post: _schemas.Money_income_add, user_id:
     db.refresh(post)
     return post
 
+
 def get_money_income(db: _orm.Session, user_id: int):
-    return db.query(_models.Money_income).filter(_models.Money_income.user_id == user_id).all()
+    return (
+        db.query(_models.Money_income)
+        .filter(_models.Money_income.user_id == user_id)
+        .all()
+    )
+
 
 def get_money_income_id(db: _orm.Session, id: int, user_id: int):
     income_type_id = (
@@ -210,13 +230,13 @@ def get_money_income_id(db: _orm.Session, id: int, user_id: int):
     )
     return income_type_id
 
+
 def get_income_id(db: _orm.Session, id: int):
     income_type_id = (
-        db.query(_models.Money_income)
-        .filter(_models.Money_income.id == id)
-        .first()
+        db.query(_models.Money_income).filter(_models.Money_income.id == id).first()
     )
     return income_type_id
+
 
 def update_income_info(db: _orm.Session, id: int, post: _schemas.Money_income_add):
 
@@ -229,13 +249,16 @@ def update_income_info(db: _orm.Session, id: int, post: _schemas.Money_income_ad
     db.refresh(db_post)
     return db_post
 
+
 def delete_money_income(db: _orm.Session, id: int, user_id: int):
     db.query(_models.Money_income, user_id).filter(
         _models.Money_income.id == id
     ).delete()
     db.commit()
 
-#category
+
+# category
+
 
 def add_category(db: _orm.Session, post: _schemas.Category_add, user_id: int):
     post = _models.Category_type(**post.dict(), user_id=user_id)
@@ -266,9 +289,18 @@ def add_category_money(
     return post
 
 
-def calc_add_category_money(
-    db: _orm.Session, paiment_id:int):
-    bal = float(str(list(db.query(_models.Money_type.type_quantity).filter(_models.Money_type.id == paiment_id).first())).replace("[", "").replace("]",""))
+def calc_add_category_money(db: _orm.Session, paiment_id: int):
+    bal = float(
+        str(
+            list(
+                db.query(_models.Money_type.type_quantity)
+                .filter(_models.Money_type.id == paiment_id)
+                .first()
+            )
+        )
+        .replace("[", "")
+        .replace("]", "")
+    )
     print(bal)
     # db_post = get_balance_id(db=db, id=id)
     # db_post.type_quantity = bal
