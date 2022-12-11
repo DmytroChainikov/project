@@ -277,6 +277,9 @@ def delete_money_income(
     return {"message": f"successfully deleted saving type"}
 
 
+# category
+
+
 @app.post(
     "/categoty/{user_id}/add_category/",
     tags=["category"],
@@ -293,6 +296,50 @@ def add_category(
             status_code=404, detail="sorry this user does not exist"
         )
     return _services.add_category(db=db, post=post, user_id=user_id)
+
+
+@app.get("/category/{user_id}/get_category", tags=["category"])
+def get_category(user_id: int, db: _orm.Session = _fastapi.Depends(_services.get_db)):
+    post = _services.get_category(db=db, user_id=user_id)
+    return post
+
+
+@app.put(
+    "/category/{user_id}/edit_category",
+    tags=["category"],
+    response_model=_schemas.Category_type,
+)
+def update_category_type(
+    id: int,
+    user_id: int,
+    post: _schemas.Category_add,
+    db: _orm.Session = _fastapi.Depends(_services.get_db),
+):
+    category_type_id = _services.get_category_id(db=db, id=id)
+    if category_type_id is None:
+        raise _fastapi.HTTPException(
+            status_code=404, detail="sorry this category does not exist"
+        )
+    return _services.update_category_type(db=db, post=post, id=id)
+
+@app.delete("/category/{user_id}/category_delete", tags=["category"])
+def delete_category(
+    id: int, user_id: int, db: _orm.Session = _fastapi.Depends(_services.get_db)
+):
+    db_user = _services.get_user(db=db, user_id=user_id)
+    if db_user is None:
+        raise _fastapi.HTTPException(
+            status_code=404, detail="sorry this user does not exist"
+        )
+    category_type_id = _services.get_category_id(db=db, id=id)
+    if category_type_id is None:
+        raise _fastapi.HTTPException(
+            status_code=404, detail="sorry this category does not exist"
+        )
+
+    _services.delete_category(db=db, id=id, user_id=user_id)
+    _services.delete_category_money(db=db, id=id, user_id=user_id)
+    return {"message": f"successfully deleted saving type"}
 
 
 @app.post(
@@ -323,5 +370,26 @@ def add_category_money(
             status_code=404, detail="sorry this user does not exist"
         )
     return _services.add_category_money(
-        db=db, post=post, category_type_id=category_type_id, user_id=user_id, payment_id=payment_id
+        db=db,
+        post=post,
+        category_type_id=category_type_id,
+        user_id=user_id,
+        payment_id=payment_id,
     )
+
+@app.delete("/category/{user_id}/category_delete_money", tags=["category"])
+def delete_category_money_id(
+    id: int, user_id: int, db: _orm.Session = _fastapi.Depends(_services.get_db)
+):
+    db_user = _services.get_user(db=db, user_id=user_id)
+    if db_user is None:
+        raise _fastapi.HTTPException(
+            status_code=404, detail="sorry this user does not exist"
+        )
+    category_type_id = _services.get_payment_id(db=db, id=id)
+    if category_type_id is None:
+        raise _fastapi.HTTPException(
+            status_code=404, detail="sorry this category does not exist"
+        )
+    _services.delete_category_money_id(db=db, id=id, user_id=user_id)
+    return {"message": f"successfully deleted saving type"}

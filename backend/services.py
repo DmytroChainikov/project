@@ -267,7 +267,46 @@ def add_category(db: _orm.Session, post: _schemas.Category_add, user_id: int):
     db.refresh(post)
     return post
 
-payment: float
+def get_category(db: _orm.Session, user_id: int):
+    return (
+        db.query(_models.Category_type)
+        .filter(_models.Category_type.user_id == user_id)
+        .all()
+    )
+    
+def get_category_id(db: _orm.Session, id: int):
+    category_type_id = (
+        db.query(_models.Category_type).filter(_models.Category_type.id == id).first()
+    )
+    return category_type_id
+
+def update_category_type(db: _orm.Session, id: int, post: _schemas.Category_add):
+
+    db_post = get_category_id(db=db, id=id)
+    db_post.category_name = post.category_name
+    db_post.category_description = post.category_description
+    db.commit()
+    db.refresh(db_post)
+    return db_post
+
+def delete_category(db: _orm.Session, id: int, user_id: int):
+    db.query(_models.Category_type, user_id).filter(
+        _models.Category_type.id == id
+    ).delete()
+    db.commit()
+    
+def delete_category_money(db: _orm.Session, id: int, user_id: int):
+    db.query(_models.Category_quantity, user_id).filter(
+        _models.Category_quantity.category_type_id == id
+    ).delete()
+    db.commit()
+    
+def delete_category_money_id(db: _orm.Session, id: int, user_id: int):
+    db.query(_models.Category_quantity, user_id).filter(
+        _models.Category_quantity.id == id
+    ).delete()
+    db.commit()
+
 def add_category_money(
     db: _orm.Session,
     post: _schemas.Category_add_money,
@@ -319,3 +358,9 @@ def add_category_money(
     db.commit()
     db.refresh(post)
     return post
+
+def get_payment_id(db: _orm.Session, id: int):
+    payment_id = (
+        db.query(_models.Category_quantity).filter(_models.Category_quantity.id == id).first()
+    )
+    return payment_id
