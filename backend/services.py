@@ -267,18 +267,21 @@ def add_category(db: _orm.Session, post: _schemas.Category_add, user_id: int):
     db.refresh(post)
     return post
 
+
 def get_category(db: _orm.Session, user_id: int):
     return (
         db.query(_models.Category_type)
         .filter(_models.Category_type.user_id == user_id)
         .all()
     )
-    
+
+
 def get_category_id(db: _orm.Session, id: int):
     category_type_id = (
         db.query(_models.Category_type).filter(_models.Category_type.id == id).first()
     )
     return category_type_id
+
 
 def update_category_type(db: _orm.Session, id: int, post: _schemas.Category_add):
 
@@ -289,30 +292,34 @@ def update_category_type(db: _orm.Session, id: int, post: _schemas.Category_add)
     db.refresh(db_post)
     return db_post
 
+
 def delete_category(db: _orm.Session, id: int, user_id: int):
     db.query(_models.Category_type, user_id).filter(
         _models.Category_type.id == id
     ).delete()
     db.commit()
-    
+
+
 def delete_category_money(db: _orm.Session, id: int, user_id: int):
     db.query(_models.Category_quantity, user_id).filter(
         _models.Category_quantity.category_type_id == id
     ).delete()
     db.commit()
-    
+
+
 def delete_category_money_id(db: _orm.Session, id: int, user_id: int):
     db.query(_models.Category_quantity, user_id).filter(
         _models.Category_quantity.id == id
     ).delete()
     db.commit()
 
+
 def add_category_money(
     db: _orm.Session,
     post: _schemas.Category_add_money,
     category_type_id: int,
     user_id: int,
-    payment_id: int
+    payment_id: int,
 ):
     category_type_id = (
         db.query(_models.Category_type)
@@ -338,19 +345,19 @@ def add_category_money(
     print(bal)
     print(balance)
     print(result)
-    
+
     db_post = get_balance_id(db=db, id=payment_id)
     db_post.type_quantity = result
     db.commit()
     db.refresh(db_post)
-    
-    
+
     def post_add_category_money():
         category_type_id = (
-        db.query(_models.Category_type)
-        .filter(_models.Category_type.id == category_type_id)
-        .first()
-    ).__dict__["id"]
+            db.query(_models.Category_type)
+            .filter(_models.Category_type.id == category_type_id)
+            .first()
+        ).__dict__["id"]
+
     post = _models.Category_quantity(
         **post.dict(), category_type_id=category_type_id, user_id=user_id
     )
@@ -359,8 +366,11 @@ def add_category_money(
     db.refresh(post)
     return post
 
+
 def get_payment_id(db: _orm.Session, id: int):
     payment_id = (
-        db.query(_models.Category_quantity).filter(_models.Category_quantity.id == id).first()
+        db.query(_models.Category_quantity)
+        .filter(_models.Category_quantity.id == id)
+        .first()
     )
     return payment_id
