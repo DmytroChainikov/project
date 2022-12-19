@@ -345,25 +345,29 @@ def add_category_money(
     print(bal)
     print(balance)
     print(result)
+    if result >= 0:
+        db_post = get_balance_id(db=db, id=payment_id)
+        db_post.type_quantity = result
+        db.commit()
+        db.refresh(db_post)
 
-    db_post = get_balance_id(db=db, id=payment_id)
-    db_post.type_quantity = result
-    db.commit()
-    db.refresh(db_post)
+        def post_add_category_money():
+            category_type_id = (
+                db.query(_models.Category_type)
+                .filter(_models.Category_type.id == category_type_id)
+                .first()
+            ).__dict__["id"]
 
-    def post_add_category_money():
-        category_type_id = (
-            db.query(_models.Category_type)
-            .filter(_models.Category_type.id == category_type_id)
-            .first()
-        ).__dict__["id"]
-
-    post = _models.Category_quantity(
-        **post.dict(), category_type_id=category_type_id, user_id=user_id
-    )
-    db.add(post)
-    db.commit()
-    db.refresh(post)
+        post = _models.Category_quantity(
+            **post.dict(), category_type_id=category_type_id, user_id=user_id
+        )
+        db.add(post)
+        db.commit()
+        db.refresh(post)
+    else:
+        raise _fastapi.HTTPException(
+            status_code=401, detail="Not enough money"
+        )
     return post
 
 
