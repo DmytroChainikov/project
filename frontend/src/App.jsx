@@ -15,7 +15,7 @@ const App = () => {
     const requestOptions = {
       method: "GET",
       headers: {
-        "Content-Type": "application/json",
+        "accept": "application/json",
       },
     };
     const response = await fetch("http://localhost:8000/api", requestOptions);

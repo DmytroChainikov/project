@@ -1,4 +1,5 @@
 import ast
+import re
 import fastapi as _fastapi
 import fastapi.security as _security
 import jwt as _jwt
@@ -38,7 +39,6 @@ def get_category(db: _orm.Session, category_type_id: int):
 
 async def get_user_by_email(email: str, db: _orm.Session):
     return db.query(_models.User).filter(_models.User.email == email).first()
-
 
 async def create_user(user: _schemas.UserCreate, db: _orm.Session):
     user_obj = _models.User(
@@ -84,6 +84,27 @@ async def get_current_user(
 
     return _schemas.User.from_orm(user)
 
+async def get_current_user_id(
+    db: _orm.Session = _fastapi.Depends(get_db),
+    token: str = _fastapi.Depends(oauth2schema),
+):
+    try:
+        payload = _jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+        user = db.query(_models.User).get(payload["id"])
+        print(user.id)
+    except:
+        raise _fastapi.HTTPException(
+            status_code=401, detail="Invalid Email or Password"
+        )
+
+    return user
+
+def is_valid_email(email):
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if re.match(pattern, email):
+        return False
+    else:
+        return True
 
 # money_type
 

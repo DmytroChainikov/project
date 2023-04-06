@@ -13,13 +13,13 @@ const Register = () => {
   const submitRegistration = async () => {
     const requestOptions = {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "accept": "application/json" , "Content-Type": "application/json" },
       body: JSON.stringify({ email: email, hashed_password: password }),
     };
 
     const response = await fetch("http://localhost:8000/api/users", requestOptions);
     const data = await response.json();
-
+    console.log(data);
     if (!response.ok) {
       setErrorMessage(data.detail);
     } else {
@@ -62,7 +62,11 @@ const Register = () => {
               type="password"
               placeholder="Enter password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+               console.log(e);
+               setPassword(e.target.value)
+              }
+            }
               className="input"
               required
             />
