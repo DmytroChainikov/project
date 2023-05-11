@@ -16,3 +16,5 @@ cd ..
 cd ..
 
 pip install passlib[bcrypt] SQLAlchemy fastapi[all] pyjwt
+
+uvicorn main:app --reload
