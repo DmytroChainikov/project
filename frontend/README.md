@@ -1,3 +1,9 @@
+## How to open a web application page
+
+When the web application launches, it will go to the link http://localhost:3000/free and show a blank screen. 
+
+**You need to go to**: [http://localhost:3000/money-management/dashboard](http://localhost:3000/money-management/dashboard).
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
@@ -5,6 +11,10 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 ## Available Scripts
 
 In the project directory, you can run:
+
+### `npm install`
+
+Install packages
 
 ### `npm start`
 
