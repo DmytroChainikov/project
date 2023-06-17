@@ -5,7 +5,7 @@ import fastapi.security as _security
 import sqlalchemy.orm as _orm, sqlalchemy as _sql
 import database as _database
 import services as _services, schemas as _schemas, models as _models
-
+import yfinance as yf
 app = _fastapi.FastAPI()
 
 #_services.create_database()
@@ -35,7 +35,6 @@ async def create_user(
 
     return await _services.create_token(user)
 
-
 @app.post("/api/token", tags=["users"])
 async def generate_token(
     form_data: _security.OAuth2PasswordRequestForm = _fastapi.Depends(),
@@ -57,6 +56,31 @@ async def get_user(user: _schemas.User = _fastapi.Depends(_services.get_current_
 async def get_user(user: int = _fastapi.Depends(_services.get_current_user_id)):
     user_id = user.id
     return user_id
+
+@app.get("/api/users/currency", tags=["users"])
+async def get_user(base_currency: str = _fastapi.Depends(_services.get_current_user_currency)):
+    user_currency = base_currency
+    return user_currency
+
+@app.put("/api/users/edit", response_model=_schemas.User_edit, tags=["users"])
+async def update_user(
+    user_update: _schemas.User_edit,
+    user: int = _fastapi.Depends(_services.get_current_user_id),
+    db: _orm.Session = _fastapi.Depends(_services.get_db)
+):
+    db_user = _services.get_user(db=db, user_id=user.id)
+    if db_user is None:
+        raise _fastapi.HTTPException(
+            status_code=404, detail="sorry this user does not exist"
+        )
+    if user_update.main_currency:
+        db_user.main_currency = user_update.main_currency
+
+    db.commit()
+    db.refresh(db_user)
+
+    return db_user
+
 
 @app.get("/api", tags=["name"])
 async def root():
@@ -86,19 +110,27 @@ def get_balance(user: int = _fastapi.Depends(_services.get_current_user_id), db:
     return post
 
 
+# @app.get("/money/get_total_balance", tags=["money"])
+# def get_total_balance(
+#     user: int = _fastapi.Depends(_services.get_current_user_id), db: _orm.Session = _fastapi.Depends(_services.get_db)
+# ):
+#     result = _services.get_total_balance(db=db, user_id=user.id)
+
+#     if result[0] != user.id:
+#         raise _fastapi.HTTPException(
+#             status_code=404, detail="sorry this user does not exist"
+#         )
+#     print(result)
+#     return result
+
 @app.get("/money/get_total_balance", tags=["money"])
 def get_total_balance(
-    user: int = _fastapi.Depends(_services.get_current_user_id), db: _orm.Session = _fastapi.Depends(_services.get_db)
+    user: int = _fastapi.Depends(_services.get_current_user_id),
+    db: _orm.Session = _fastapi.Depends(_services.get_db),
 ):
-    result = _services.get_total_balance(db=db, user_id=user.id)
+    result = _services.get_total_amount(db=db, user_id=user.id)
 
-    if result[0] != user.id:
-        raise _fastapi.HTTPException(
-            status_code=404, detail="sorry this user does not exist"
-        )
-    print(result)
     return result
-
 
 @app.get("/money/get_money_type_id", tags=["money"])
 def get_money_type_id(
@@ -176,6 +208,14 @@ def get_saving(user: int = _fastapi.Depends(_services.get_current_user_id), db: 
     post = _services.get_saving(db=db, user_id=user.id)
     return post
 
+@app.get("/money/get_total_saving", tags=["money_saving"])
+def get_total_balance(
+    user: int = _fastapi.Depends(_services.get_current_user_id),
+    db: _orm.Session = _fastapi.Depends(_services.get_db),
+):
+    result = _services.get_total_saving_amount(db=db, user_id=user.id)
+
+    return result
 
 @app.put(
     "/money/edit_saving_type",
@@ -264,6 +304,14 @@ def update_income_info(
         )
     return _services.update_income_info(db=db, post=post, id=id)
 
+@app.get("/money/get_total_income", tags=["money_income"])
+def get_total_balance(
+    user: int = _fastapi.Depends(_services.get_current_user_id),
+    db: _orm.Session = _fastapi.Depends(_services.get_db),
+):
+    result = _services.get_total_income_amount(db=db, user_id=user.id)
+
+    return result
 
 @app.delete("/money/money_income_delete", tags=["money_income"])
 def delete_money_income(
@@ -288,7 +336,7 @@ def delete_money_income(
 
 
 @app.post(
-    "/categoty/add_category/",
+    "/category/add_category/",
     tags=["category"],
     response_model=_schemas.Category_type,
 )
@@ -310,15 +358,24 @@ def get_category(user: int = _fastapi.Depends(_services.get_current_user_id), db
     post = _services.get_category(db=db, user_id=user.id)
     return post
 
+@app.get("/category/get_category_type_id", tags=["category"])
+def get_category_type_id(
+    id: int,
+    user: int = _fastapi.Depends(_services.get_current_user_id),
+    db: _orm.Session = _fastapi.Depends(_services.get_db)
+):
+    post = _services.get_category_type_id(db=db, user_id=user.id, id=id)
+    return post
 
 @app.put(
-    "/category/{user_id}/edit_category",
+    "/category/edit_category",
     tags=["category"],
     response_model=_schemas.Category_type,
 )
 def update_category_type(
     id: int,
     post: _schemas.Category_add,
+    user: int = _fastapi.Depends(_services.get_current_user_id),
     db: _orm.Session = _fastapi.Depends(_services.get_db),
 ):
     category_type_id = _services.get_category_id(db=db, id=id)
@@ -383,8 +440,18 @@ def add_category_money(
         payment_id=payment_id,
     )
 
+@app.get("/category/get_costs", tags=["category"])
+def get_costs(user: int = _fastapi.Depends(_services.get_current_user_id), db: _orm.Session = _fastapi.Depends(_services.get_db)):
+    post = _services.get_costs(db=db, user_id=user.id)
+    return post
+
+@app.get("/category/get_costs_by_id", tags=["category"])
+def get_costs_by_id(category_type_id: int, user: int = _fastapi.Depends(_services.get_current_user_id), db: _orm.Session = _fastapi.Depends(_services.get_db)):
+    post = _services.get_costs_by_category_id(db=db, category_type_id=category_type_id)
+    return post
+
 @app.delete("/category/category_delete_money", tags=["category"])
-def delete_category_money_id(
+def delete_cost(
     id: int, user: int = _fastapi.Depends(_services.get_current_user_id), db: _orm.Session = _fastapi.Depends(_services.get_db)
 ):
     db_user = _services.get_user(db=db, user_id=user.id)
@@ -397,5 +464,5 @@ def delete_category_money_id(
         raise _fastapi.HTTPException(
             status_code=404, detail="sorry this category does not exist"
         )
-    _services.delete_category_money_id(db=db, id=id, user_id=user.id)
+    _services.delete_cost(db=db, id=id, user_id=user.id)
     return {"message": f"successfully deleted saving type"}

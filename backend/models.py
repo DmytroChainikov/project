@@ -12,6 +12,7 @@ class User(_database.Base):
     __tablename__ = "users"
     id = _sql.Column(_sql.Integer, primary_key=True, index=True)
     email = _sql.Column(_sql.String, unique=True, index=True)
+    main_currency = _sql.Column(_sql.String)
     money_id = relationship("Money", back_populates="user")
     category_id = relationship("Category", back_populates="user")
     hashed_password = _sql.Column(_sql.String)
@@ -36,7 +37,7 @@ class Money_type(_database.Base):
     id = _sql.Column(_sql.Integer, primary_key=True, index=True)
     type_name = _sql.Column(_sql.String)
     type_quantity = _sql.Column(_sql.Float)
-    type_description = _sql.Column(_sql.String)
+    type_currency = _sql.Column(_sql.String)
 
     user_id = _sql.Column(_sql.Integer, _sql.ForeignKey("money.id"))
     money = _orm.relationship("Money", back_populates="money_type_id")
@@ -48,6 +49,7 @@ class Money_income(_database.Base):
     income_type = _sql.Column(_sql.String)
     income_description = _sql.Column(_sql.String)
     income_quantity = _sql.Column(_sql.Float)
+    income_currency = _sql.Column(_sql.String)
     income_period = _sql.Column(_sql.Integer)
 
     user_id = _sql.Column(_sql.Integer, _sql.ForeignKey("money.id"))
@@ -59,6 +61,7 @@ class Money_saving(_database.Base):
     id = _sql.Column(_sql.Integer, primary_key=True, index=True)
     saving_name = _sql.Column(_sql.String)
     saving_quantity = _sql.Column(_sql.Float)
+    saving_currency = _sql.Column(_sql.String)
     saving_persentage = _sql.Column(_sql.Float)
     saving_period_start = _sql.Column(_sql.Date)
     saving_period_end = _sql.Column(_sql.Date)
@@ -97,5 +100,7 @@ class Category_quantity(_database.Base):
     category_quantity = _sql.Column(_sql.Float)
     quantity_description = _sql.Column(_sql.String)
     category_type_id = _sql.Column(_sql.Integer)
-
+    payment_id = _sql.Column(_sql.Integer)
+    payment_currency = _sql.Column(_sql.String)
+    category_name = _sql.Column(_sql.String)
     category = _orm.relationship("Category", back_populates="category_quantity_id")

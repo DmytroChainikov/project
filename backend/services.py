@@ -7,6 +7,7 @@ import datetime as _dt
 import sqlalchemy.orm as _orm, sqlalchemy as _sql
 import passlib.hash as _hash
 import database as _database, models as _models, schemas as _schemas
+import requests
 
 oauth2schema = _security.OAuth2PasswordBearer(tokenUrl="/api/token")
 
@@ -40,9 +41,12 @@ def get_category(db: _orm.Session, category_type_id: int):
 async def get_user_by_email(email: str, db: _orm.Session):
     return db.query(_models.User).filter(_models.User.email == email).first()
 
+
 async def create_user(user: _schemas.UserCreate, db: _orm.Session):
     user_obj = _models.User(
-        email=user.email, hashed_password=_hash.bcrypt.hash(user.hashed_password)
+        email=user.email,
+        hashed_password=_hash.bcrypt.hash(user.hashed_password),
+        main_currency="UAH",
     )
     db.add(user_obj)
     db.commit()
@@ -84,6 +88,7 @@ async def get_current_user(
 
     return _schemas.User.from_orm(user)
 
+
 async def get_current_user_id(
     db: _orm.Session = _fastapi.Depends(get_db),
     token: str = _fastapi.Depends(oauth2schema),
@@ -99,12 +104,35 @@ async def get_current_user_id(
 
     return user
 
+
+async def get_current_user_currency(
+    db: _orm.Session = _fastapi.Depends(get_db),
+    token: str = _fastapi.Depends(oauth2schema),
+):
+    try:
+        payload = _jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+        user = db.query(_models.User).get(payload["id"])
+        base_currency = user.main_currency
+    except:
+        raise _fastapi.HTTPException(
+            status_code=401, detail="Invalid Email or Password"
+        )
+
+    return base_currency
+
+
 def is_valid_email(email):
-    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
     if re.match(pattern, email):
         return False
     else:
         return True
+
+
+def user_currency(db: _orm.Session, id: int):
+    user_currency = db.query(_models.User).filter(_models.User.id == id).first()
+    return user_currency
+
 
 # money_type
 
@@ -122,17 +150,52 @@ def get_balance_id(db: _orm.Session, id: int):
     return money_type_id
 
 
-def get_total_balance(user_id: int, db: _orm.Session):
-    value_sum = _sql.select(
-        [_models.Money_type.user_id, _sql.func.sum(_models.Money_type.type_quantity)]
-    ).group_by(_models.Money_type.user_id)
-    result = _database.engine.execute(value_sum).fetchall()
-    for item in result:
-        if user_id is item[0]:
-            user = (item[0], item[1])
-        if user_id is item[0] - 1:
-            user = (item[0], item[1])
-    return user
+def get_exchange_rates():
+    api_url = f"https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json"
+    response = requests.get(api_url)
+    if response.status_code == requests.codes.ok:
+        exchange_rates = response.json()
+        return exchange_rates
+    else:
+        print("Error:", response.status_code, response.text)
+        return None
+
+
+# Отримання загальної суми в базовій валюті
+def get_total_amount(user_id: int, db: _orm.Session):
+    data_array = (
+        db.query(_models.Money_type).filter(_models.Money_type.user_id == user_id).all()
+    )
+    name_list = [
+        {"type_quantity": item.type_quantity, "type_currency": item.type_currency}
+        for item in data_array
+    ]
+    user = db.query(_models.User).get(user_id)
+    base_currency = user.main_currency
+    exchange_rates = get_exchange_rates()
+    exchange_rates.append({"txt": "Гривня", "rate": 1, "cc": "UAH"})
+    sum = 0
+    for item in name_list:
+        if item["type_currency"] == "UAH" and base_currency != "UAH":
+            data = list(filter(lambda u: u["cc"] == base_currency, exchange_rates))[0][
+                "rate"
+            ]
+            sum += item["type_quantity"] / data
+        elif item["type_currency"] == "UAH" and base_currency == "UAH":
+            sum += item["type_quantity"]
+        else:
+            sum += (
+                list(
+                    filter(lambda u: u["cc"] == item["type_currency"], exchange_rates)
+                )[0]["rate"]
+                / list(filter(lambda u: u["cc"] == base_currency, exchange_rates))[0][
+                    "rate"
+                ]
+            ) * item["type_quantity"]
+
+    result = round(sum, 2)
+
+    return result
 
 
 def get_money_type_id(db: _orm.Session, id: int, user_id: int):
@@ -156,7 +219,7 @@ def update_type_info(db: _orm.Session, id: int, post: _schemas.Money_type_add):
 
     db_post = get_balance_id(db=db, id=id)
     db_post.type_name = post.type_name
-    db_post.type_description = post.type_description
+    db_post.type_currency = post.type_currency
     db_post.type_quantity = post.type_quantity
     db.commit()
     db.refresh(db_post)
@@ -203,12 +266,54 @@ def get_saving_id(db: _orm.Session, id: int):
     return money_type_id
 
 
+def get_total_saving_amount(user_id: int, db: _orm.Session):
+    data_array = (
+        db.query(_models.Money_saving)
+        .filter(_models.Money_saving.user_id == user_id)
+        .all()
+    )
+    name_list = [
+        {
+            "saving_quantity": item.saving_quantity,
+            "saving_currency": item.saving_currency,
+        }
+        for item in data_array
+    ]
+    user = db.query(_models.User).get(user_id)
+    base_currency = user.main_currency
+    exchange_rates = get_exchange_rates()
+    exchange_rates.append({"txt": "Гривня", "rate": 1, "cc": "UAH"})
+    sum = 0
+    for item in name_list:
+        if item["saving_quantity"] == "UAH" and base_currency != "UAH":
+            data = list(filter(lambda u: u["cc"] == base_currency, exchange_rates))[0][
+                "rate"
+            ]
+            sum += item["saving_currency"] / data
+        elif item["saving_quantity"] == "UAH" and base_currency == "UAH":
+            sum += item["saving_currency"]
+        else:
+            sum += (
+                list(
+                    filter(lambda u: u["cc"] == item["saving_currency"], exchange_rates)
+                )[0]["rate"]
+                / list(filter(lambda u: u["cc"] == base_currency, exchange_rates))[0][
+                    "rate"
+                ]
+            ) * item["saving_quantity"]
+
+    result = round(sum, 2)
+
+    return result
+
+
 def update_saving_info(db: _orm.Session, id: int, post: _schemas.Money_saving_add):
 
     db_post = get_saving_id(db=db, id=id)
     db_post.saving_name = post.saving_name
     db_post.saving_description = post.saving_description
     db_post.saving_quantity = post.saving_quantity
+    db_post.saving_currency = post.saving_currency
     db_post.saving_persentage = post.saving_persentage
     db_post.saving_period_start = post.saving_period_start
     db_post.saving_period_end = post.saving_period_end
@@ -259,12 +364,54 @@ def get_income_id(db: _orm.Session, id: int):
     return income_type_id
 
 
+def get_total_income_amount(user_id: int, db: _orm.Session):
+    data_array = (
+        db.query(_models.Money_income)
+        .filter(_models.Money_income.user_id == user_id)
+        .all()
+    )
+    name_list = [
+        {
+            "income_quantity": item.income_quantity,
+            "income_currency": item.income_currency,
+        }
+        for item in data_array
+    ]
+    user = db.query(_models.User).get(user_id)
+    base_currency = user.main_currency
+    exchange_rates = get_exchange_rates()
+    exchange_rates.append({"txt": "Гривня", "rate": 1, "cc": "UAH"})
+    sum = 0
+    for item in name_list:
+        if item["income_quantity"] == "UAH" and base_currency != "UAH":
+            data = list(filter(lambda u: u["cc"] == base_currency, exchange_rates))[0][
+                "rate"
+            ]
+            sum += item["income_currency"] / data
+        elif item["income_quantity"] == "UAH" and base_currency == "UAH":
+            sum += item["income_currency"]
+        else:
+            sum += (
+                list(
+                    filter(lambda u: u["cc"] == item["income_currency"], exchange_rates)
+                )[0]["rate"]
+                / list(filter(lambda u: u["cc"] == base_currency, exchange_rates))[0][
+                    "rate"
+                ]
+            ) * item["income_quantity"]
+
+    result = round(sum, 2)
+
+    return result
+
+
 def update_income_info(db: _orm.Session, id: int, post: _schemas.Money_income_add):
 
     db_post = get_income_id(db=db, id=id)
     db_post.income_type = post.income_type
     db_post.income_description = post.income_description
     db_post.income_quantity = post.income_quantity
+    db_post.income_currency = post.income_currency
     db_post.income_period = post.income_period
     db.commit()
     db.refresh(db_post)
@@ -300,6 +447,15 @@ def get_category(db: _orm.Session, user_id: int):
 def get_category_id(db: _orm.Session, id: int):
     category_type_id = (
         db.query(_models.Category_type).filter(_models.Category_type.id == id).first()
+    )
+    return category_type_id
+
+
+def get_category_type_id(db: _orm.Session, id: int, user_id: int):
+    category_type_id = (
+        db.query(_models.Category_type, user_id)
+        .filter(_models.Category_type.id == id)
+        .first()
     )
     return category_type_id
 
@@ -361,11 +517,11 @@ def add_category_money(
         .replace("[", "")
         .replace("]", "")
     )
+    fff = db.query(_models.Money_type.type_currency).filter(_models.Money_type.id == payment_id).first()
+    category_name = (list(db.query(_models.Category_type.category_name).filter(_models.Category_type.id == category_type_id).first())[0])
+    print(list(fff)[0])
     balance = get_balance.category_quantity
     result = bal - balance
-    print(bal)
-    print(balance)
-    print(result)
     if result >= 0:
         db_post = get_balance_id(db=db, id=payment_id)
         db_post.type_quantity = result
@@ -380,16 +536,81 @@ def add_category_money(
             ).__dict__["id"]
 
         post = _models.Category_quantity(
-            **post.dict(), category_type_id=category_type_id, user_id=user_id
+            **post.dict(),
+            category_type_id=category_type_id,
+            payment_id=payment_id,
+            payment_currency=list(fff)[0],
+            category_name= category_name,
+            user_id=user_id
         )
         db.add(post)
         db.commit()
         db.refresh(post)
     else:
-        raise _fastapi.HTTPException(
-            status_code=401, detail="Not enough money"
-        )
+        raise _fastapi.HTTPException(status_code=401, detail="Not enough money")
     return post
+
+
+def get_costs(db: _orm.Session, user_id: int):
+    return (
+        db.query(_models.Category_quantity)
+        .filter(_models.Category_quantity.user_id == user_id)
+        .order_by(_models.Category_quantity.id.desc())
+        .limit(10)
+        .all()
+    )
+
+
+def get_costs_by_category_id(db: _orm.Session, category_type_id: int):
+    return (
+        db.query(_models.Category_quantity)
+        .filter(_models.Category_quantity.category_type_id == category_type_id)
+        .all()
+    )
+
+def delete_cost(db: _orm.Session, id: int, user_id: int):
+    payment_id = int(
+        str(
+            list(
+                db.query(_models.Category_quantity.payment_id).filter(
+                _models.Category_quantity.id == id)
+                .first()
+                )
+            )
+            .replace("[", "")
+            .replace("]", "")
+    )
+    bal = float(
+        str(
+            list(
+                db.query(_models.Money_type.type_quantity)
+                .filter(_models.Money_type.id == payment_id)
+                .first()
+            )
+        )
+        .replace("[", "")
+        .replace("]", "")
+    )
+    quantity = float(
+        str(
+            list(
+                db.query(_models.Category_quantity.category_quantity).filter(
+                _models.Category_quantity.id == id)
+                .first()
+                )
+            )
+            .replace("[", "")
+            .replace("]", "")
+    )
+    result = bal + quantity
+    db_post = get_balance_id(db=db, id=payment_id)
+    db_post.type_quantity = result
+    db.commit()
+    db.refresh(db_post)
+    db.query(_models.Category_quantity, user_id).filter(
+        _models.Category_quantity.id == id
+    ).delete()
+    db.commit()
 
 
 def get_payment_id(db: _orm.Session, id: int):
@@ -399,3 +620,6 @@ def get_payment_id(db: _orm.Session, id: int):
         .first()
     )
     return payment_id
+
+
+# ======================================================================

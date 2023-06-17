@@ -5,7 +5,7 @@ import pydantic as _pydantic
 
 class Money_type_base(_pydantic.BaseModel):
     type_name: str
-    type_description: str
+    type_currency: str
     type_quantity: float
     # class Config:
     #     orm_mode = True
@@ -27,6 +27,7 @@ class Money_income_base(_pydantic.BaseModel):
     income_type: str
     income_description: str
     income_quantity: float
+    income_currency: str
     income_period: int
 
 
@@ -45,6 +46,7 @@ class Money_income(Money_income_base):
 class Money_saving_base(_pydantic.BaseModel):
     saving_name: str
     saving_quantity: float
+    saving_currency: str
     saving_persentage: float
     saving_description: str
     saving_period_start: _dt.date
@@ -92,6 +94,9 @@ class Category_add_money(Category_quantity_base):
 class Category_quantity(Category_quantity_base):
     id: int
     category_type_id: int
+    payment_id: int
+    payment_currency: str
+    category_name: str
     user_id: int
 
     class Config:
@@ -100,17 +105,13 @@ class Category_quantity(Category_quantity_base):
 
 class _UserBase(_pydantic.BaseModel):
     email: str
-
     class Config:
         orm_mode = True
-
 
 class UserCreate(_UserBase):
     hashed_password: str
-
     class Config:
         orm_mode = True
-
 
 class BaseModelll(_pydantic.BaseModel):
     class Config:
@@ -129,11 +130,15 @@ class Category(_pydantic.BaseModel):
     category_type_id: List[Category_type] = []
     category_quantity_id: List[Category_quantity] = []
 
-
 class User(_UserBase):
     id: int
     money_id: List[Money] = []
     category_id: List[Category] = []
-
+    main_currency: str
+    class Config:
+        orm_mode = True
+        
+class User_edit(_pydantic.BaseModel):
+    main_currency: str
     class Config:
         orm_mode = True
