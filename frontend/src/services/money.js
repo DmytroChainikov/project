@@ -15,6 +15,21 @@ export function getBalance() {
             console.error('GET_USER_BALANSE_FAILED', `SOMETHING_WENT_WRONG\n${error}`);
         });
 }
+export function getRandomBalance() {
+    return moneyService
+        .getRandomBalanse()
+        .then(
+            (res) => {
+                return res.data;
+            },
+            (error) => {
+                console.error('GET_USER_BALANSE_FAILED', `SOMETHING_WENT_WRONG\n${error}`);
+            }
+        )
+        .catch((error) => {
+            console.error('GET_USER_BALANSE_FAILED', `SOMETHING_WENT_WRONG\n${error}`);
+        });
+}
 
 export function getTotalBalance() {
     return moneyService

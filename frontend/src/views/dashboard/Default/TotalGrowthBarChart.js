@@ -17,6 +17,8 @@ import { gridSpacing } from 'store/constant';
 
 // chart data
 import chartData from './chart-data/total-growth-bar-chart';
+import { getSumCosts, getTotalSumCosts } from 'services/category';
+import { getUserCurrency } from 'services/users';
 
 const status = [
     {
@@ -36,9 +38,43 @@ const status = [
 // ==============================|| DASHBOARD DEFAULT - TOTAL GROWTH BAR CHART ||============================== //
 
 const TotalGrowthBarChart = ({ isLoading }) => {
-    const [value, setValue] = useState('today');
     const theme = useTheme();
+
+    const [user_currency, setUserCurrency] = useState(' ');
+    useEffect(() => {
+        const fetchData = async () => {
+            setUserCurrency(await getUserCurrency());
+        };
+        fetchData();
+    }, []);
+    const [total_sum_costs, setTotalSumCosts] = useState(' ');
+    useEffect(() => {
+        const fetchData = async () => {
+            setTotalSumCosts(await getTotalSumCosts());
+        };
+        fetchData();
+    }, []);
+
     const customization = useSelector((state) => state.customization);
+    const [chartDataMy, setChartDataMy] = useState(chartData);
+    const [categories, setCategories] = useState([
+        {
+            name: 'Продукти',
+            data: [468]
+        },
+        {
+            name: 'Комуналка',
+            data: [0, 1312]
+        },
+        {
+            name: 'Бензин',
+            data: [0, 0, 1500]
+        },
+        {
+            name: 'Подарунки',
+            data: [0, 0, 0, 800]
+        }
+    ]);
 
     const { navType } = customization;
     const { primary } = theme.palette.text;
@@ -52,8 +88,25 @@ const TotalGrowthBarChart = ({ isLoading }) => {
     const secondaryLight = theme.palette.secondary.light;
 
     useEffect(() => {
+        const fetchData = async () => {
+            const data = await getSumCosts();
+            const series = data.map((item, index) => {
+                return { name: item.category_name, data: [...Array(index).fill(0), item.category_quantity] };
+            });
+            const xaxisCategories = series.map((item) => item.name);
+            const newData = chartData;
+            newData.series = series;
+            newData.options.xaxis.categories = xaxisCategories;
+            setCategories(series);
+            setChartDataMy(newData);
+            console.log(newData);
+        };
+        fetchData();
+    }, []);
+
+    useEffect(() => {
         const newChartData = {
-            ...chartData.options,
+            ...chartDataMy.options,
             colors: [primary200, primaryDark, secondaryMain, primary, darkLight, grey200],
             xaxis: {
                 labels: {
@@ -86,7 +139,7 @@ const TotalGrowthBarChart = ({ isLoading }) => {
         if (!isLoading) {
             ApexCharts.exec(`bar-chart`, 'updateOptions', newChartData);
         }
-    }, [navType, primary200, primaryDark, secondaryMain, secondaryLight, primary, darkLight, grey200, isLoading, grey500]);
+    }, [navType, primary200, primaryDark, secondaryMain, secondaryLight, primary, darkLight, grey200, isLoading, grey500, categories]);
 
     return (
         <>
@@ -103,14 +156,16 @@ const TotalGrowthBarChart = ({ isLoading }) => {
                                             <Typography variant="subtitle2">Total costs for the month</Typography>
                                         </Grid>
                                         <Grid item>
-                                            <Typography variant="h3">3280 UAH</Typography>
+                                            <Typography variant="h3">
+                                                {total_sum_costs} {user_currency}
+                                            </Typography>
                                         </Grid>
                                     </Grid>
                                 </Grid>
                             </Grid>
                         </Grid>
                         <Grid item xs={12}>
-                            <Chart {...chartData} />
+                            <Chart {...chartDataMy} />
                         </Grid>
                     </Grid>
                 </MainCard>

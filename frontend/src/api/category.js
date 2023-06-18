@@ -8,7 +8,9 @@ const CATEGORY_URLS = {
     COST_DELETE: '/category/category_delete_money',
     ADD_CATEGORY_MONEY: '/category/add_category_money/',
     GET_COSTS: '/category/get_costs_by_id?category_type_id=',
-    GET_USER_COSTS: '/category/get_costs'
+    GET_USER_COSTS: '/category/get_costs',
+    GET_SUM_COSTS: '/category/get_sum_costs',
+    GET_TOTAL_SUM_COSTS: '/category/get_total_sum_costs'
 };
 
 export default class categoryService {
@@ -41,7 +43,12 @@ export default class categoryService {
     static getUserCosts() {
         return instance.get(CATEGORY_URLS.GET_USER_COSTS);
     }
-
+    static getSumCosts() {
+        return instance.get(CATEGORY_URLS.GET_SUM_COSTS);
+    }
+    static getTotalSumCosts() {
+        return instance.get(CATEGORY_URLS.GET_TOTAL_SUM_COSTS);
+    }
     static deleteCosts(idIncome) {
         return instance.delete(CATEGORY_URLS.COST_DELETE + `?id=${idIncome}`);
     }

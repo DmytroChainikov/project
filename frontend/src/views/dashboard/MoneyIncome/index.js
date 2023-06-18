@@ -74,7 +74,7 @@ const MoneyIncome = () => {
                                         <TableCell align="right">{row.income_quantity}</TableCell>
                                         <TableCell align="right">{row.income_currency}</TableCell>
                                         <TableCell align="right">{row.income_period}</TableCell>
-                                        <TableCell component="th" scope="row">
+                                        <TableCell align="right" component="th" scope="row">
                                             {row.income_description}
                                         </TableCell>
                                         <TableCell align="right">

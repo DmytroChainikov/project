@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
-import { useState } from 'react';
-
+import { useState, useEffect } from 'react';
+import { getRandomBalance } from 'services/money';
 // material-ui
 import { useTheme, styled } from '@mui/material/styles';
 import { Avatar, Box, Grid, Typography } from '@mui/material';
@@ -62,7 +62,13 @@ const TotalOrderLineChartCard = ({ isLoading }) => {
     const handleChangeTime = (event, newValue) => {
         setTimeValue(newValue);
     };
-
+    const [random_balance, setRandomBalance] = useState(' ');
+    useEffect(() => {
+        const fetchData = async () => {
+            setRandomBalance(await getRandomBalance());
+        };
+        fetchData();
+    }, []);
     return (
         <>
             {isLoading ? (
@@ -92,7 +98,7 @@ const TotalOrderLineChartCard = ({ isLoading }) => {
                                 <Grid container alignItems="center">
                                     <Grid item>
                                         <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>
-                                            920 UAH
+                                            {random_balance.type_quantity} {random_balance.type_currency}
                                         </Typography>
                                     </Grid>
                                 </Grid>
@@ -105,7 +111,7 @@ const TotalOrderLineChartCard = ({ isLoading }) => {
                                         color: 'primary.light'
                                     }}
                                 >
-                                    Готівка
+                                    {random_balance.type_name}
                                 </Typography>
                             </Grid>
                         </Grid>

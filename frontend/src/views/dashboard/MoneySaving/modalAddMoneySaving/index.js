@@ -137,6 +137,15 @@ export default function ModalAddMoneySaving({ modalOpen, onClose, isUpdate, setU
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                                 <TextField
                                     type="text"
+                                    label="Name"
+                                    name="name"
+                                    onChange={handleChange}
+                                    id="formatted-numberformat-input"
+                                    variant="standard"
+                                    sx={{ width: '100%' }}
+                                />
+                                <TextField
+                                    type="text"
                                     label="Quantity"
                                     onChange={handleChange}
                                     name="quantity"
@@ -173,15 +182,6 @@ export default function ModalAddMoneySaving({ modalOpen, onClose, isUpdate, setU
                                     InputProps={{
                                         inputComponent: NumericFormatCustom
                                     }}
-                                    variant="standard"
-                                    sx={{ width: '100%' }}
-                                />
-                                <TextField
-                                    type="text"
-                                    label="Name"
-                                    name="name"
-                                    onChange={handleChange}
-                                    id="formatted-numberformat-input"
                                     variant="standard"
                                     sx={{ width: '100%' }}
                                 />

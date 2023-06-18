@@ -17,6 +17,8 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { editMoneySaving } from 'services/saving';
 import { useEffect } from 'react';
+import currencies from 'views/dashboard/Money/modalAddMoney/moneyType';
+import Autocomplete from '@mui/material/Autocomplete';
 
 const style = {
     position: 'absolute',
@@ -61,6 +63,7 @@ export default function ModalEditMoneySaving({ modalOpen, onClose, value, isUpda
     const [periodEnd, setPeriodEnd] = useState(moment(value.saving_period_end).format('yyyy-MM-DD'));
     const [description, setDescription] = useState(value.saving_description);
     const [persentage, setPersentage] = useState(value.saving_persentage);
+    const [currency, setСurrency] = useState('');
 
     const handelPreidStart = (res) => {
         if (res.$d === null) {
@@ -118,6 +121,7 @@ export default function ModalEditMoneySaving({ modalOpen, onClose, value, isUpda
                 <Formik
                     initialValues={{
                         quantity: value.saving_quantity,
+                        currency: value.saving_currency,
                         name: value.saving_name,
                         description: value.saving_description,
                         persentage: value.saving_persentage,
@@ -129,12 +133,14 @@ export default function ModalEditMoneySaving({ modalOpen, onClose, value, isUpda
                             if (scriptedRef.current) {
                                 setStatus({ success: true });
                                 setSubmitting(false);
+                                values.currency = currency;
                                 values.period_start = periodStart;
                                 values.period_end = periodEnd;
                                 console.log(value);
                                 console.log({
                                     saving_name: values.name,
                                     saving_quantity: values.quantity,
+                                    currency: value.saving_currency,
                                     saving_persentage: persentage,
                                     saving_description: description,
                                     saving_period_start: values.period_start === '' ? value.saving_period_start : values.period_start,
@@ -144,6 +150,7 @@ export default function ModalEditMoneySaving({ modalOpen, onClose, value, isUpda
                                 await editMoneySaving(value.id, {
                                     saving_name: values.name,
                                     saving_quantity: values.quantity,
+                                    saving_currency: values.currency,
                                     saving_persentage: persentage,
                                     saving_description: description,
                                     saving_period_start: values.period_start === '' ? value.saving_period_start : values.period_start,
@@ -179,6 +186,16 @@ export default function ModalEditMoneySaving({ modalOpen, onClose, value, isUpda
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                                 <TextField
                                     type="text"
+                                    label="Name"
+                                    defaultValue={value.saving_name}
+                                    name="name"
+                                    onChange={handleChange}
+                                    id="formatted-numberformat-input"
+                                    variant="standard"
+                                    sx={{ width: '100%' }}
+                                />
+                                <TextField
+                                    type="text"
                                     label="Quantity"
                                     onChange={handleChange}
                                     name="quantity"
@@ -190,6 +207,24 @@ export default function ModalEditMoneySaving({ modalOpen, onClose, value, isUpda
                                     variant="standard"
                                     sx={{ width: '100%' }}
                                 />
+                                <Autocomplete
+                                    disablePortal
+                                    onChange={(res) => {
+                                        if (res.target.textContent === '') {
+                                            setСurrency('');
+                                        } else {
+                                            setСurrency(res.target.textContent);
+                                        }
+                                    }}
+                                    name="currency"
+                                    defaultValue={value.saving_currency}
+                                    id="combo-box-demo"
+                                    options={currencies.map((item) => `${item.code}`)}
+                                    sx={{ width: '100%', paddingBottom: '45px' }}
+                                    renderInput={(params) => (
+                                        <TextField type="text" name="currency" {...params} variant="standard" label="Currency" />
+                                    )}
+                                />
                                 <TextField
                                     type="text"
                                     label="Persentage"
@@ -200,16 +235,6 @@ export default function ModalEditMoneySaving({ modalOpen, onClose, value, isUpda
                                     InputProps={{
                                         inputComponent: NumericFormatCustom
                                     }}
-                                    variant="standard"
-                                    sx={{ width: '100%' }}
-                                />
-                                <TextField
-                                    type="text"
-                                    label="Name"
-                                    defaultValue={value.saving_name}
-                                    name="name"
-                                    onChange={handleChange}
-                                    id="formatted-numberformat-input"
                                     variant="standard"
                                     sx={{ width: '100%' }}
                                 />

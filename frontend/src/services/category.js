@@ -126,3 +126,34 @@ export function getUserCosts() {
             console.error('GET_USER_CATEGORY_COSTS_FAILED', `SOMETHING_WENT_WRONG\n${error}`);
         });
 }
+
+export function getSumCosts() {
+    return categoryService
+        .getSumCosts()
+        .then(
+            (res) => {
+                return res.data;
+            },
+            (error) => {
+                console.error('GET_USER_CATEGORY_COSTS_FAILED', `SOMETHING_WENT_WRONG\n${error}`);
+            }
+        )
+        .catch((error) => {
+            console.error('GET_USER_CATEGORY_COSTS_FAILED', `SOMETHING_WENT_WRONG\n${error}`);
+        });
+}
+export function getTotalSumCosts() {
+    return categoryService
+        .getTotalSumCosts()
+        .then(
+            (res) => {
+                return res.data;
+            },
+            (error) => {
+                console.error('GET_USER_CATEGORY_COSTS_FAILED', `SOMETHING_WENT_WRONG\n${error}`);
+            }
+        )
+        .catch((error) => {
+            console.error('GET_USER_CATEGORY_COSTS_FAILED', `SOMETHING_WENT_WRONG\n${error}`);
+        });
+}

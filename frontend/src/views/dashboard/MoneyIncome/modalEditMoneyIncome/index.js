@@ -15,6 +15,7 @@ import useScriptRef from 'hooks/useScriptRef';
 import { useState } from 'react';
 import { useEffect } from 'react';
 import { editMoneyIncome } from 'services/income';
+import currencies from 'views/dashboard/Money/modalAddMoney/moneyType';
 
 const style = {
     position: 'absolute',
@@ -55,6 +56,7 @@ const NumericFormatCustom = React.forwardRef(function NumericFormatCustom(props,
 
 export default function ModalEditMoneyIncome({ modalOpen, onClose, value, isUpdate, setUpdate }) {
     const scriptedRef = useScriptRef();
+    const [currency, setСurrency] = useState('');
 
     return (
         <Modal
@@ -82,7 +84,8 @@ export default function ModalEditMoneyIncome({ modalOpen, onClose, value, isUpda
                                     income_type: values.type,
                                     income_description: values.description,
                                     income_quantity: values.quantity,
-                                    income_period: values.period
+                                    income_period: values.period,
+                                    income_currency: currency
                                 });
                                 setUpdate(!isUpdate);
                                 onClose(false);
@@ -117,6 +120,16 @@ export default function ModalEditMoneyIncome({ modalOpen, onClose, value, isUpda
                             </Box>
                             <TextField
                                 type="text"
+                                name="type"
+                                onChange={handleChange}
+                                defaultValue={value.income_type}
+                                id="standard-multiline-static"
+                                sx={{ width: '100%' }}
+                                label="Type"
+                                variant="standard"
+                            />
+                            <TextField
+                                type="text"
                                 label="Quantity"
                                 onChange={handleChange}
                                 name="quantity"
@@ -127,6 +140,24 @@ export default function ModalEditMoneyIncome({ modalOpen, onClose, value, isUpda
                                 }}
                                 variant="standard"
                                 sx={{ width: '100%' }}
+                            />
+                            <Autocomplete
+                                disablePortal
+                                onChange={(res) => {
+                                    if (res.target.textContent === '') {
+                                        setСurrency('');
+                                    } else {
+                                        setСurrency(res.target.textContent);
+                                    }
+                                }}
+                                name="currency"
+                                defaultValue={value.income_currency}
+                                id="combo-box-demo"
+                                options={currencies.map((item) => `${item.code}`)}
+                                sx={{ width: '100%', paddingBottom: '45px' }}
+                                renderInput={(params) => (
+                                    <TextField required type="text" name="currency" {...params} variant="standard" label="Currency" />
+                                )}
                             />
                             <TextField
                                 type="text"
@@ -140,16 +171,6 @@ export default function ModalEditMoneyIncome({ modalOpen, onClose, value, isUpda
                                 }}
                                 variant="standard"
                                 sx={{ width: '100%' }}
-                            />
-                            <TextField
-                                type="text"
-                                name="type"
-                                onChange={handleChange}
-                                defaultValue={value.income_type}
-                                id="standard-multiline-static"
-                                sx={{ width: '100%' }}
-                                label="Type"
-                                variant="standard"
                             />
                             <TextField
                                 type="text"

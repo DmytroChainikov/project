@@ -71,7 +71,8 @@ export default function ModalAddMoneyIncome({ modalOpen, onClose, isUpdate, setU
                         quantity: 0,
                         type: '',
                         description: '',
-                        period: 0
+                        period: 0,
+                        currency: ''
                     }}
                     onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
                         try {
@@ -79,6 +80,7 @@ export default function ModalAddMoneyIncome({ modalOpen, onClose, isUpdate, setU
                                 values.currency = currency;
                                 setStatus({ success: true });
                                 setSubmitting(false);
+                                console.log(values);
                                 await addIncome({
                                     income_type: values.type,
                                     income_description: values.description,
@@ -119,6 +121,15 @@ export default function ModalAddMoneyIncome({ modalOpen, onClose, isUpdate, setU
                             </Box>
                             <TextField
                                 type="text"
+                                name="type"
+                                onChange={handleChange}
+                                id="standard-multiline-static"
+                                sx={{ width: '100%' }}
+                                label="Name"
+                                variant="standard"
+                            />
+                            <TextField
+                                type="text"
                                 label="Quantity"
                                 onChange={handleChange}
                                 name="quantity"
@@ -157,15 +168,6 @@ export default function ModalAddMoneyIncome({ modalOpen, onClose, isUpdate, setU
                                 }}
                                 variant="standard"
                                 sx={{ width: '100%' }}
-                            />
-                            <TextField
-                                type="text"
-                                name="type"
-                                onChange={handleChange}
-                                id="standard-multiline-static"
-                                sx={{ width: '100%' }}
-                                label="Type"
-                                variant="standard"
                             />
                             <TextField
                                 type="text"

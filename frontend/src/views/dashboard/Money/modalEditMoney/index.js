@@ -55,7 +55,7 @@ const NumericFormatCustom = React.forwardRef(function NumericFormatCustom(props,
 
 export default function ModalEditMoney({ modalOpen, onClose, value, isUpdate, setUpdate }) {
     const scriptedRef = useScriptRef();
-    const [name, setName] = useState('');
+    const [currency, setCurrency] = useState('');
 
     return (
         <Modal
@@ -69,19 +69,19 @@ export default function ModalEditMoney({ modalOpen, onClose, value, isUpdate, se
             <Grid container sx={style}>
                 <Formik
                     initialValues={{
-                        quantity: value.type_quantity,
                         name: value.type_name,
-                        description: value.type_description
+                        quantity: value.type_quantity,
+                        currency: value.type_currency
                     }}
                     onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
                         try {
                             if (scriptedRef.current) {
                                 setStatus({ success: true });
                                 setSubmitting(false);
-                                values.name = name;
+                                values.currency = currency;
                                 await editMoneyType(value.id, {
                                     type_name: values.name === '' ? value.type_name : values.name,
-                                    type_description: values.description,
+                                    type_currency: values.currency,
                                     type_quantity: values.quantity
                                 });
                                 setUpdate(!isUpdate);
@@ -112,6 +112,18 @@ export default function ModalEditMoney({ modalOpen, onClose, value, isUpdate, se
                                 </IconButton>
                             </Box>
                             <TextField
+                                defaultValue={value.type_name}
+                                type="text"
+                                name="name"
+                                onChange={handleChange}
+                                id="standard-multiline-static"
+                                sx={{ width: '100%' }}
+                                label="Name"
+                                multiline
+                                rows={1}
+                                variant="standard"
+                            />
+                            <TextField
                                 type="text"
                                 label="Quantity"
                                 defaultValue={value.type_quantity}
@@ -128,29 +140,19 @@ export default function ModalEditMoney({ modalOpen, onClose, value, isUpdate, se
                                 disablePortal
                                 onChange={(res) => {
                                     if (res.target.textContent === '') {
-                                        setName('');
+                                        setCurrency('');
                                     } else {
-                                        setName(res.target.textContent);
+                                        setCurrency(res.target.textContent);
                                     }
                                 }}
-                                name="name"
-                                defaultValue={value.type_name}
+                                name="currency"
+                                defaultValue={value.type_currency}
                                 id="combo-box-demo"
-                                options={currencies.map((item) => `${item.code} - ${item.name}`)}
-                                sx={{ width: '100%' }}
-                                renderInput={(params) => <TextField type="text" name="name" {...params} variant="standard" label="Name" />}
-                            />
-                            <TextField
-                                defaultValue={value.type_description}
-                                type="text"
-                                name="description"
-                                onChange={handleChange}
-                                id="standard-multiline-static"
-                                sx={{ width: '100%' }}
-                                label="Description"
-                                multiline
-                                rows={3}
-                                variant="standard"
+                                options={currencies.map((item) => `${item.code}`)}
+                                sx={{ width: '100%', paddingBottom: '45px' }}
+                                renderInput={(params) => (
+                                    <TextField type="text" name="currency" {...params} variant="standard" label="Currency" />
+                                )}
                             />
                             <Button disabled={isSubmitting} type="submit" color="warning" variant="contained" sx={{ width: '100%' }}>
                                 Edit

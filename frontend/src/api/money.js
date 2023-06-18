@@ -3,6 +3,7 @@ import instance from './configurations/configurations';
 const MONEY_URLS = {
     ADD_MONEY: '/money/add_money/',
     GET_BALANCE: '/money/get_balance',
+    GET_RANDOM_BALANCE: '/money/get_random_balance',
     GET_TOTAL_BALANCE: '/money/get_total_balance',
     EDIT_MONEY_TYPE: '/money/edit_money_type',
     MONEY_DELETE: '/money/money_type_delete'
@@ -11,6 +12,9 @@ const MONEY_URLS = {
 export default class moneyService {
     static getBalanse() {
         return instance.get(MONEY_URLS.GET_BALANCE);
+    }
+    static getRandomBalanse() {
+        return instance.get(MONEY_URLS.GET_RANDOM_BALANCE);
     }
 
     static addMoney(model) {

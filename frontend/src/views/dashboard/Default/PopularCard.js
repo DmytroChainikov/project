@@ -17,11 +17,13 @@ import KeyboardArrowUpOutlinedIcon from '@mui/icons-material/KeyboardArrowUpOutl
 import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
 import { getUserCosts } from 'services/category';
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router';
 
 // ==============================|| DASHBOARD DEFAULT - POPULAR CARD ||============================== //
 
 const PopularCard = ({ isLoading }) => {
     const theme = useTheme();
+    const navigate = useNavigate();
 
     const [anchorEl, setAnchorEl] = useState(null);
 
@@ -50,7 +52,6 @@ const PopularCard = ({ isLoading }) => {
         };
         fetchData();
     }, []);
-    console.log(categoryCosts);
     return (
         <>
             {isLoading ? (
@@ -118,7 +119,13 @@ const PopularCard = ({ isLoading }) => {
                         </Grid>
                     </CardContent>
                     <CardActions sx={{ p: 1.25, pt: 0, justifyContent: 'center' }}>
-                        <Button size="small" disableElevation>
+                        <Button
+                            onClick={() => {
+                                navigate('/dashboard/category');
+                            }}
+                            size="small"
+                            disableElevation
+                        >
                             View All
                             <ChevronRightOutlinedIcon />
                         </Button>

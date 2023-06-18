@@ -34,7 +34,7 @@ const chartData = {
         },
         xaxis: {
             type: 'category',
-            categories: ['Комуналка', 'Продукти', 'Бензин', 'Подарунки']
+            categories: ['.']
         },
         legend: {
             show: true,
