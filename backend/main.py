@@ -5,7 +5,6 @@ import fastapi.security as _security
 import sqlalchemy.orm as _orm, sqlalchemy as _sql
 import database as _database
 import services as _services, schemas as _schemas, models as _models
-import yfinance as yf
 app = _fastapi.FastAPI()
 
 #_services.create_database()
@@ -109,7 +108,10 @@ def get_balance(user: int = _fastapi.Depends(_services.get_current_user_id), db:
     post = _services.get_balance(db=db, user_id=user.id)
     return post
 
-
+@app.get("/money/get_random_balance", tags=["money"])
+def get_random_balance(user: int = _fastapi.Depends(_services.get_current_user_id), db: _orm.Session = _fastapi.Depends(_services.get_db)):
+    post = _services.get_random_balance(db=db, user_id=user.id)
+    return post
 # @app.get("/money/get_total_balance", tags=["money"])
 # def get_total_balance(
 #     user: int = _fastapi.Depends(_services.get_current_user_id), db: _orm.Session = _fastapi.Depends(_services.get_db)
@@ -466,3 +468,14 @@ def delete_cost(
         )
     _services.delete_cost(db=db, id=id, user_id=user.id)
     return {"message": f"successfully deleted saving type"}
+
+@app.get("/category/get_sum_costs", tags=["category"])
+def get_sum_costs(user: int = _fastapi.Depends(_services.get_current_user_id), db: _orm.Session = _fastapi.Depends(_services.get_db)):
+    post = _services.get_sum_costs(db=db, user_id=user.id)
+    return post
+
+@app.get("/category/get_total_sum_costs", tags=["category"])
+def get_total_costs_sum(user: int = _fastapi.Depends(_services.get_current_user_id), db: _orm.Session = _fastapi.Depends(_services.get_db)):
+    data = _services.get_sum_costs(db=db, user_id=user.id)
+    total_sum = _services.get_total_costs_sum(data)
+    return total_sum

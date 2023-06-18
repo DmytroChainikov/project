@@ -8,6 +8,7 @@ import sqlalchemy.orm as _orm, sqlalchemy as _sql
 import passlib.hash as _hash
 import database as _database, models as _models, schemas as _schemas
 import requests
+import random
 
 oauth2schema = _security.OAuth2PasswordBearer(tokenUrl="/api/token")
 
@@ -142,6 +143,13 @@ def get_balance(db: _orm.Session, user_id: int):
         db.query(_models.Money_type).filter(_models.Money_type.user_id == user_id).all()
     )
 
+def get_random_balance(db: _orm.Session, user_id: int):
+    results = db.query(_models.Money_type).filter(_models.Money_type.user_id == user_id).all()
+    if results:
+        random_element = random.choice(results)
+        return random_element
+    else:
+        return None
 
 def get_balance_id(db: _orm.Session, id: int):
     money_type_id = (
@@ -567,6 +575,84 @@ def get_costs_by_category_id(db: _orm.Session, category_type_id: int):
         .filter(_models.Category_quantity.category_type_id == category_type_id)
         .all()
     )
+    
+def get_sum_costs(db: _orm.Session, user_id: int):
+    costs = db.query(_models.Category_quantity).filter_by(user_id=user_id).order_by(_models.Category_quantity.category_type_id).all()
+    expenses_by_category = {}
+
+    for cost in costs:
+        category_id = cost.category_type_id
+        if category_id not in expenses_by_category:
+            expenses_by_category[category_id] = []
+        expenses_by_category[category_id].append(cost)
+
+    user = db.query(_models.User).get(user_id)
+    base_currency = user.main_currency
+    exchange_rates = get_exchange_rates()
+    exchange_rates.append({"txt": "Гривня", "rate": 1, "cc": "UAH"})
+    result_by_category = {}
+
+    for category_id, expenses in expenses_by_category.items():
+        category_result = []
+
+        if len(expenses) == 1:
+            expense = expenses[0]
+            expense_result = {
+                "category_quantity": round(expense.category_quantity, 2),
+                "category_name": expense.category_name
+            }
+            if expense.payment_currency != base_currency:
+                source_rate = next((rate["rate"] for rate in exchange_rates if rate["cc"] == expense.payment_currency), None)
+                target_rate = next((rate["rate"] for rate in exchange_rates if rate["cc"] == base_currency), None)
+                if source_rate and target_rate:
+                    converted_quantity = expense.category_quantity * (source_rate / target_rate)
+                    expense_result["category_quantity"] = round(converted_quantity, 2)
+
+            category_result.append(expense_result)
+        else:
+            total_quantity = 0
+            for expense in expenses:
+                if expense.payment_currency != base_currency:
+                    source_rate = next((rate["rate"] for rate in exchange_rates if rate["cc"] == expense.payment_currency), None)
+                    target_rate = next((rate["rate"] for rate in exchange_rates if rate["cc"] == base_currency), None)
+                    if source_rate and target_rate:
+                        converted_quantity = expense.category_quantity * (source_rate / target_rate)
+                        total_quantity += converted_quantity
+                else:
+                    total_quantity += expense.category_quantity
+
+            category_result.append({
+                "category_quantity": round(total_quantity, 2),
+                "category_name": expenses[0].category_name
+            })
+
+        result_by_category[category_id] = category_result
+    
+    series = []
+    max_data_length = max(len(expenses) for expenses in result_by_category.values())
+
+    for category_id, expenses in result_by_category.items():
+        category_name = expenses[0]['category_name']
+        data = [round(expense['category_quantity'], 2) for expense in expenses]
+        while len(data) < max_data_length:
+            data.append(0)
+        
+        series.append({
+            'category_name': category_name,
+            'category_quantity': data
+        })
+
+    return series
+
+def get_total_costs_sum(data):
+    total_sum = 0
+
+    for item in data:
+        category_quantity = item['category_quantity'][0]
+        total_sum += category_quantity
+
+    return total_sum
+
 
 def delete_cost(db: _orm.Session, id: int, user_id: int):
     payment_id = int(
